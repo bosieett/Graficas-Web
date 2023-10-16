@@ -123,7 +123,7 @@ onValue(starCountRef, (snapshot) => {
     const data = snapshot.val();
     
     Object.entries(data).forEach(([key, value]) => {
-        console.log(`${key} ${value.x} ${value.z}`);
+        // console.log(`${key} ${value.x} ${value.z}`);
         
         const player = scene.getObjectByName(key);
 
@@ -148,7 +148,6 @@ onValue(starCountRef, (snapshot) => {
                     charactercontrols = new CharacterControls(model, mixer, animationMap, controls, camera, 'Idle')
                 }
                 scene.add(model);
-
             });
         }
         else { 
