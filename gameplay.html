@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Graficas Computacionales</title>
+		<style>
+			body { margin: 0; }
+		</style>
+		<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+		<script type="importmap">
+		  {
+			"imports": {
+			  "three": "https://unpkg.com/three@0.153/build/three.module.js",
+			  "three/addons/": "https://unpkg.com/three@0.153/examples/jsm/"
+			}
+		  }
+		</script>
+	</head>
+	<body>
+		<button id="button-login">Login</button>
+		<button id="button-logout">Logout</button>
+		<script type="module" src="./gameplay.js"></script>
+	</body>
+</html>

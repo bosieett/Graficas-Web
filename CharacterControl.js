@@ -24,8 +24,8 @@ export class CharacterControls{
 
         //
         this.fadeDuration=0.2;
-        this.runVelocity=5;
-        this.walkVelocity=2;
+        this.runVelocity=10;
+        this.walkVelocity=8;
 
 
 
@@ -164,5 +164,14 @@ document.addEventListener('keydown',(e)=>this._onKeyDown(e),false);
                 this.model.position.z-=moveZ;
                 this.updateCameraTarget(moveX,moveZ);
         }
+    }
+    getUID() {
+        return this.model.name;
+    }
+    getPosX() {
+        return this.model.position.x;
+    }
+    getPosZ() {
+        return this.model.position.z;
     }
 }

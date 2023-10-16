@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sushi Mania - Congifuracion</title>
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&display=swap" rel="stylesheet">
+</head>
+<body>
+    <main class="contenedor-pagina contenedor-config">
+        <div class="contenedor-logoConfig">
+            <img src="imagenes/Config.png" alt="" class="logoConfig">
+        </div>
+        <div class="contenedor-contenedores-config">
+            <div class="contenedor-botones-config">
+                <a class="button-ui" href="#">DIFICULTAD</a>
+                <a class="button-ui" href="#">CALIDAD GRAF.</a>
+                <br><br><br><br>
+                <a class="button-ui" href="#">GUARDAR</a>
+                <a class="button-ui" href="#">CONTINUAR</a>
+            </div>
+            <div class="contenedor-botones-config">
+                <br><br><br>
+                <a class="button-ui" href="#">VOL. MUSICA
+                    <div class="slider-cont">
+                        <div class="slider">
+                            <input class="inputMusica" type="range" min="0" max="100" value="50">
+                            <progress class="progressMusica" min="0" max="100" value="50"></progress>
+                        </div>
+                        <div class="sliderValueMusica">50</div>
+                    </div>
+                    <script>
+                        sliderMusica = document.querySelector(".inputMusica");
+                        sliderMusica.oninput = function(){
+                            progressBarMusica = document.querySelector(".progressMusica");
+                            progressBarMusica.value = sliderMusica.value;
+                            sliderValueMusica = document.querySelector(".sliderValueMusica");
+                            sliderValueMusica.innerHTML = sliderMusica.value;
+                        }
+                    </script>
+                </a>
+                <br><br><br>
+                <a class="button-ui" href="#">VOL. VFX
+                    <div class="slider-cont">
+                        <div class="slider">
+                            <input class="inputVFX" type="range" min="0" max="100" value="50">
+                            <progress class="progressVFX" min="0" max="100" value="50"></progress>
+                        </div>
+                        <div class="sliderValueVFX">50</div>
+                    </div>
+                    <script>
+                        slider = document.querySelector(".inputVFX");
+                        slider.oninput = function(){
+                            progressBar = document.querySelector(".progressVFX");
+                            progressBar.value = slider.value;
+                            sliderValue = document.querySelector(".sliderValueVFX");
+                            sliderValue.innerHTML = slider.value;
+                        }
+                    </script>
+                </a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
