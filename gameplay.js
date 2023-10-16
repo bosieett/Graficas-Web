@@ -85,27 +85,34 @@ const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.inner
 camera.position.x=0;
 camera.position.y=10;
 camera.position.z=50;
-let light = new THREE.DirectionalLight(0xffffff, 1.0);
+let light = new THREE.DirectionalLight(0xffffff, 0.5);
 scene.add(light);
-let light2 = new THREE.AmbientLight(0x101010);
+let light2 = new THREE.AmbientLight(0xd58cff);
 scene.add(light2);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
 //Skybox
-new THREE.TextureLoader().load("wallpaper.png",(texture)=>{
+new THREE.TextureLoader().load("skibox.jpg",(texture)=>{
     const rt= new THREE.WebGLCubeRenderTarget(3072);
     rt.fromEquirectangularTexture(renderer, texture)
     scene.background=rt.texture;
 })
 
 //Plano
+/*
 const geometry = new THREE.PlaneGeometry( 300, 300 );
 const material = new THREE.MeshBasicMaterial( {color: 'grey', side: THREE.DoubleSide} );
 const plane = new THREE.Mesh( geometry, material );
 plane.rotation.x = Math.PI * 0.5
 scene.add( plane );
+*/
+
+//Modelo del mapa
+ new GLTFLoader().load('scenary.glb', function(gltf){
+    scene.add(gltf.scene);
+ });
 
 var charactercontrols;
 
