@@ -20,15 +20,22 @@ import {
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDHLZ0nhnVExQy_-zARpK0nA1mqWM4u15Y",
-  authDomain: "graficas-web-b3432.firebaseapp.com",
-  databaseURL: "https://graficas-web-b3432-default-rtdb.firebaseio.com",
-  projectId: "graficas-web-b3432",
-  storageBucket: "graficas-web-b3432.appspot.com",
-  messagingSenderId: "1047240392856",
-  appId: "1:1047240392856:web:5511c4a065dc7460f950ed"
-};
 
+    apiKey: "AIzaSyAu7KPLa2vQ_HDXEC25WCXh-A4a4gZVS4A",
+  
+    authDomain: "piagraficasweb-5905f.firebaseapp.com",
+  
+    projectId: "piagraficasweb-5905f",
+  
+    storageBucket: "piagraficasweb-5905f.appspot.com",
+  
+    messagingSenderId: "82150438327",
+  
+    appId: "1:82150438327:web:2750244f471b1c55bb6432"
+  
+  };
+  
+  
 //Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
@@ -130,7 +137,7 @@ onValue(starCountRef, (snapshot) => {
     const data = snapshot.val();
     
     Object.entries(data).forEach(([key, value]) => {
-        // console.log(`${key} ${value.x} ${value.z}`);
+        console.log(`${key} ${value.x} ${value.z}`);
         
         const player = scene.getObjectByName(key);
 
