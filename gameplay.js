@@ -248,14 +248,18 @@ function chooseMap(numero){
 
 //Modelo del mapa
  new GLTFLoader().load(chooseMap(2), function(gltf){
-     gltf.scene.position.x=0;
-    gltf.scene.position.z=14;
+     
+    gltf.scene.position.x = 2;
+    gltf.scene.position.z = 10;
     gltf.scene.traverse((hijo)=>{
        
       let cube2BB = new THREE.Box3();
       cube2BB.setFromObject(hijo);
-      const helper = new THREE.Box3Helper( cube2BB, 0xffff00 );
-scene.add( helper );
+    /*
+        Para ver las colisiones del mapa
+        const helper = new THREE.Box3Helper( cube2BB, 0xffff00 );
+        scene.add( helper );
+    */
       mapColissions.push(cube2BB);
     })
     scene.add(gltf.scene);
@@ -269,7 +273,7 @@ function writeUserData(userId, positionX, positionZ) {
         x: positionX,
         z: positionZ
     });
-    console.log(positionX,positionZ)
+    //console.log(positionX,positionZ)
 }
 
 //Leer
@@ -287,6 +291,7 @@ onValue(starCountRef, (snapshot) => {
                 const model = gltf.scene;
                 model.traverse(object=>{
                     if(object.isMesh) {
+                        if(object.name=="Knife")object.visible=false;
                         object.castShadow=true;
                     } 
                 });
@@ -317,7 +322,8 @@ const clock = new THREE.Clock();
 //Movimiento de camara
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping=true;
-controls.minDistance=90;
+controls.minDistance=40;
+controls.maxDistance=40;
 controls.enablePan=true;
 controls.autorotate=false;
 controls.enableRotate=false;
@@ -496,3 +502,13 @@ if(localStorage.getItem("currentPlayer")) {
     animate();
 }
 
+window.addEventListener( 'resize', onWindowResize, false );
+
+function onWindowResize(){
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
