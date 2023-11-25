@@ -9,7 +9,8 @@ import {
     getAuth, 
     GoogleAuthProvider, 
     signInWithPopup, 
-    signOut 
+    signOut,
+    FacebookAuthProvider 
 } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 import { 
     getDatabase, 
@@ -43,6 +44,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 auth.languageCode = 'es';
 const provider = new GoogleAuthProvider();
+const providerFB = new FacebookAuthProvider();
 
 const db = getDatabase();
 let currentUser;
@@ -70,12 +72,27 @@ async function login() {
             // ...
         });
 }
+
+async function loginFB() {
+    await signInWithPopup(auth, providerFB)
+        .then((result) => {
+            console.log(result);
+            console.log('facebook signIn')
+        }).catch((error) => {
+            console.log(error);
+        });
+}
+
 const currentPlayer = localStorage.getItem('currentPlayer');
 const buttonLogin = document.getElementById('button-login');
 const buttonLogout = document.getElementById('button-logout');
-if(buttonLogin != null && buttonLogout != null) {
+const buttonLoginFB = document.getElementById('button-loginFB');
+if(buttonLogin != null && buttonLogout != null && buttonLoginFB != null) {
     buttonLogin.addEventListener('click',async()=> {
         await login();
+    })
+    buttonLoginFB.addEventListener('click',async()=> {
+        await loginFB();
     })
     buttonLogout.addEventListener('click',async()=> {
         await signOut(auth).then(() => {
@@ -86,6 +103,19 @@ if(buttonLogin != null && buttonLogout != null) {
     })
 }
 
+/*
+const buttonLoginFB = document.querySelector('#button-loginFB');
+buttonLoginFB.addEventListener('click', e => {
+    e.preventDefault();
+    signInWithPopup(auth, providerFB)
+        .then(result => {
+            console.log(result);
+            console.log('facebook signIn')
+        }).catch(error => {
+            console.log(error);
+        });
+})
+*/
 //Esenciales
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
