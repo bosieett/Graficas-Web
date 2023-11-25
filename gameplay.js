@@ -45,6 +45,7 @@ auth.languageCode = 'es';
 const provider = new GoogleAuthProvider();
 
 const db = getDatabase();
+
 let currentUser;
 
 async function login() {
@@ -88,10 +89,10 @@ if(buttonLogin != null && buttonLogout != null) {
 
 //Esenciales
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.position.x=0;
-camera.position.y=10;
-camera.position.z=50;
+camera.position.y=40;
+camera.position.z=30;
 let light = new THREE.DirectionalLight(0xffffff, 0.5);
 scene.add(light);
 let light2 = new THREE.AmbientLight(0xd58cff);
@@ -119,6 +120,8 @@ scene.add( plane );
 //Modelo del mapa
  new GLTFLoader().load('scenary.glb', function(gltf){
     scene.add(gltf.scene);
+    gltf.scene.position.x = 2;
+    gltf.scene.position.z = 10;
  });
 
 var charactercontrols;
@@ -151,7 +154,7 @@ onValue(starCountRef, (snapshot) => {
                 });
                 model.position.set(value.x,0,value.z);
                 model.name = key;
-                //Animaciones
+                // Animaciones
                 const gltfAnimations=gltf.animations;
                 const mixer=new THREE.AnimationMixer(model);
                 const animationMap=new Map();
@@ -161,6 +164,7 @@ onValue(starCountRef, (snapshot) => {
                 if(model.name == currentPlayer) {
                     charactercontrols = new CharacterControls(model, mixer, animationMap, controls, camera, 'Idle')
                 }
+                // activarControles(model);
                 scene.add(model);
             });
         }
@@ -195,6 +199,28 @@ function animate() {
     }
     controls.update();
     renderer.render( scene, camera );
+}
+
+function activarControles(model) {
+
+    document.addEventListener("keydown", function(event) {
+
+        const teclaPresionada = event.key;
+        
+        if (teclaPresionada === 'w' || teclaPresionada === 'W') {
+            model.position.z -= 1;
+        } 
+        else if (teclaPresionada === 'a' || teclaPresionada === 'A') {
+            model.position.x -= 1;
+        } 
+        else if (teclaPresionada === 's' || teclaPresionada === 'S') {
+            model.position.z += 1;
+        } 
+        else if (teclaPresionada === 'd' || teclaPresionada === 'D') {
+            model.position.x += 1;
+        }     
+
+    })
 }
 
 if(localStorage.getItem("currentPlayer")) {

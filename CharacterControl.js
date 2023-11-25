@@ -162,7 +162,7 @@ document.addEventListener('keydown',(e)=>this._onKeyDown(e),false);
                 const moveZ=this.walkDirection.z*velocity*delta;
                 this.model.position.x-=moveX;
                 this.model.position.z-=moveZ;
-                this.updateCameraTarget(moveX,moveZ);
+                // this.updateCameraTarget(moveX,moveZ);
         }
     }
     getUID() {
