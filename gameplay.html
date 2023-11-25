@@ -1,25 +1,67 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Graficas Computacionales</title>
-		<style>
-			body { margin: 0; }
-		</style>
-		<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+<head>
+	<title>Graficas Computacionales</title>
+	<style>
+		body { margin: 0; }
+		#gameplay-container {
+			position: relative;
+		}
+		.gameplay-alert {
+			position: absolute;
+			background-color: white;
+			padding: 2em;
+			font-weight: bold;
+			margin: 2em;
+		}
+		#item-picked-alert {
+			bottom: 0;
+		}
+		#inventory {
+			bottom: 0;
+			right: 0;
+		}
+		#header-menu {
+			top: 0;
+			right: 0;
+		}
+		ul {
+			padding-left: 1em;
+		}
+	</style>
+	<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
 
-		<script type="importmap">
-		  {
-			"imports": {
-			  "three": "https://unpkg.com/three@0.153/build/three.module.js",
-			  "three/addons/": "https://unpkg.com/three@0.153/examples/jsm/"
-			}
-		  }
-		</script>
-	</head>
-	<body>
-		<button id="button-login">Login</button>
-		<button id="button-logout">Logout</button>
-		<button id="button-loginFB">Login Facebook</button>
-		<script type="module" src="./gameplay.js"></script>
-	</body>
+	<script type="importmap">
+		{
+		"imports": {
+			"three": "https://unpkg.com/three@0.153/build/three.module.js",
+			"three/addons/": "https://unpkg.com/three@0.153/examples/jsm/"
+		}
+		}
+	</script>
+</head>
+<body>
+	<button id="button-login">Login</button>
+	<button id="button-logout">Logout</button>
+	<button id="button-loginFB">Login Facebook</button>
+
+	<div id="gameplay-container">
+		<div id="header-menu" class="gameplay-alert">
+			Jugador: <span id="nombre-jugador"></span>  
+			<br>
+			Puntos: <span id="puntos-jugador"></span>
+		</div>
+		<div id="press-button-alert" class="gameplay-alert" style="display: none;"></div>
+		<div id="item-picked-alert" class="gameplay-alert" style="display: none;"></div>
+		<div id="inventory" class="gameplay-alert">
+			<h2 style="text-align: center;">Inventario</h2>
+			<h3>Ingredientes</h3>
+			<ul id="inventory-list"></ul>
+			<h3>Items</h3>
+			<ul id="items-list"></ul>
+		</div>
+	</div>
+
+	<script type="module" src="./gameplay.js"></script>
+</body>
 </html>

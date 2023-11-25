@@ -50,17 +50,43 @@ const db = getDatabase();
 
 let currentUser;
 
+const statsPlayer = {
+    uid : localStorage.getItem('currentPlayer'),
+    name : localStorage.getItem('currentPlayerName'),
+    pts : 0,
+    inventory : {
+        items : [],
+        ingredients : []
+    },
+    position : {
+        x : 0,
+        z : 0
+    } 
+}
+
+
 async function login() {
     await signInWithPopup(auth, provider)
         .then((result) => {
+
             // This gives you a Google Access Token. You can use it to access the Google API.
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const token = credential.accessToken;
+
             // The signed-in user info.
             currentUser = result.user;
-            console.log(currentUser);
             writeUserData(currentUser.uid, 0, 0);
+
             localStorage.setItem('currentPlayer', currentUser.uid)
+            localStorage.setItem('currentPlayerName', currentUser.displayName)
+
+            statsPlayer.uid = currentUser.uid
+            statsPlayer.name = currentUser.displayName
+            statsPlayer.pts = 0
+            statsPlayer.inventory = { items : [], ingredients : [] }
+
+            printStats()
+
         }).catch((error) => {
             // Handle Errors here.
             const errorCode = error.code;
@@ -85,6 +111,7 @@ async function loginFB() {
 }
 
 const currentPlayer = localStorage.getItem('currentPlayer');
+const currentPlayerName = localStorage.getItem('currentPlayerName');
 const buttonLogin = document.getElementById('button-login');
 const buttonLogout = document.getElementById('button-logout');
 const buttonLoginFB = document.getElementById('button-loginFB');
@@ -129,7 +156,33 @@ let light2 = new THREE.AmbientLight(0xd58cff);
 scene.add(light2);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
+document.getElementById('gameplay-container').appendChild( renderer.domElement );
+
+const cubeGeometry = new THREE.BoxGeometry(3, 3, 3);
+const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff1000 });
+
+const ingredients = [
+    {
+        "name": "Arroz",
+        "position": {"x": 5, "z": 5},
+    },
+    {
+        "name": "Algas",
+        "position": {"x": 10, "z": -10},
+    }
+]
+
+const arrozMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+arrozMesh.position.x = ingredients[0].position.x;
+arrozMesh.position.z = ingredients[0].position.z;
+let arrozBB = new THREE.Box3().setFromObject(arrozMesh);
+scene.add(arrozMesh);
+
+const algasMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+algasMesh.position.x = ingredients[1].position.x;
+algasMesh.position.z = ingredients[1].position.z;
+let algasBB = new THREE.Box3().setFromObject(algasMesh);
+scene.add(algasMesh);
 
 //Skybox
 new THREE.TextureLoader().load("skibox.jpg",(texture)=>{
@@ -170,7 +223,7 @@ onValue(starCountRef, (snapshot) => {
     const data = snapshot.val();
     
     Object.entries(data).forEach(([key, value]) => {
-        console.log(`${key} ${value.x} ${value.z}`);
+        // console.log(`${key} ${value.x} ${value.z}`);
         
         const player = scene.getObjectByName(key);
 
@@ -194,7 +247,6 @@ onValue(starCountRef, (snapshot) => {
                 if(model.name == currentPlayer) {
                     charactercontrols = new CharacterControls(model, mixer, animationMap, controls, camera, 'Idle')
                 }
-                // activarControles(model);
                 scene.add(model);
             });
         }
@@ -218,39 +270,120 @@ controls.enableRotate=false;
 controls.maxPolarAngle=Math.PI/2-0.05;
 controls.update();
 
-
-function animate() {
-    requestAnimationFrame(animate);
-    if(charactercontrols) {
-        charactercontrols.update(clock.getDelta());
-        if(charactercontrols.model.name == currentPlayer) {
-            writeUserData(localStorage.getItem("currentPlayer"),charactercontrols.getPosX(),charactercontrols.getPosZ());
-        }
+function checkCollisions(modelBB) {
+    if(modelBB.intersectsBox(arrozBB)){
+        showAlert('press-button', "PULSA E PARA RECOGER EL ARROZ")
+        pickItem('ingredient', ingredients[0])
+        dropItem('ingredient', ingredients[0])
     }
-    controls.update();
-    renderer.render( scene, camera );
+    else if(modelBB.intersectsBox(algasBB)){
+        showAlert('press-button', "PULSA E PARA RECOGER LAS ALGAS")
+        pickItem('ingredient', ingredients[1])
+        dropItem('ingredient', ingredients[1])
+    }
 }
 
-function activarControles(model) {
+function pickItem(itemType,item) {
+    document.addEventListener('keydown', function(e) {
+        if(e.key == 'e' || e.key == 'E') {
+            if(itemType == 'ingredient') {
+                if(statsPlayer.inventory.ingredients.length <= 0) {
+                    statsPlayer.inventory.ingredients.push(item)
+                    showAlert('item-picked', "INGREDIENTE RECOGIDO")
+                    printInventory()
+                    console.log(statsPlayer)
+                }
+            }
+        }
+    }, { once: true });
+}
 
-    document.addEventListener("keydown", function(event) {
-
-        const teclaPresionada = event.key;
-        
-        if (teclaPresionada === 'w' || teclaPresionada === 'W') {
-            model.position.z -= 1;
-        } 
-        else if (teclaPresionada === 'a' || teclaPresionada === 'A') {
-            model.position.x -= 1;
-        } 
-        else if (teclaPresionada === 's' || teclaPresionada === 'S') {
-            model.position.z += 1;
-        } 
-        else if (teclaPresionada === 'd' || teclaPresionada === 'D') {
-            model.position.x += 1;
-        }     
-
+function dropItem(itemType, item) {
+    document.addEventListener('keydown', function(e) {
+        if(e.key == 'q' || e.key == 'Q') {
+            if(itemType == 'ingredient') {
+                if(statsPlayer.inventory.ingredients.length > 0) {
+                    statsPlayer.inventory.ingredients = [];
+                    showAlert('item-picked', "INGREDIENTE SOLTADO")
+                    printInventory()
+                    console.log(statsPlayer)
+                }
+            }
+        }
     })
+}
+
+function showAlert(alertType, message) {
+
+    let gameplayAlert, duration
+
+    switch (alertType) {
+        case 'press-button':
+            gameplayAlert = document.getElementById('press-button-alert')
+            duration = 1000
+            break
+        case 'item-picked':
+            gameplayAlert = document.getElementById('item-picked-alert')
+            duration = 4000
+            break
+
+    }
+    gameplayAlert.style.display = 'block'
+    gameplayAlert.innerText = message
+
+    setTimeout(() => {
+        gameplayAlert.style.display = 'none';
+        gameplayAlert.innerText = '';
+    }, duration);
+
+}
+
+printInventory()
+function printInventory() {
+    const inventoryList = document.getElementById('inventory-list')
+    const itemsList = document.getElementById('items-list')
+
+    if(statsPlayer.inventory.ingredients.length > 0) {
+        statsPlayer.inventory.ingredients.forEach((ingredient) => {
+            inventoryList.insertAdjacentHTML('beforeend', `<li>${ingredient.name}</li>`);
+        })
+    }
+    else {
+        inventoryList.innerHTML = ''; 
+    }
+}
+
+printStats()
+function printStats() {
+    const nombreJugador = document.getElementById('nombre-jugador')
+    nombreJugador.innerText = statsPlayer.name
+    const puntosJugador = document.getElementById('puntos-jugador')
+    puntosJugador.innerText = statsPlayer.pts
+}
+
+function animate() {
+    
+    requestAnimationFrame(animate);
+
+    if(charactercontrols) {
+
+        charactercontrols.update(clock.getDelta());
+
+        if(charactercontrols.model.name == currentPlayer) {
+
+            const modelBB = new THREE.Box3().setFromObject(charactercontrols.model);
+
+            checkCollisions(modelBB);
+
+            writeUserData(statsPlayer.uid,charactercontrols.getPosX(),charactercontrols.getPosZ());
+
+        }
+
+    }
+    controls.update();
+
+    renderer.render( scene, camera );
+
 }
 
 if(localStorage.getItem("currentPlayer")) {
