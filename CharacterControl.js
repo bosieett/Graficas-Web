@@ -4,6 +4,7 @@ export class CharacterControls{
     constructor(model,mixer, animationMap, orbitcontrols,camera, currentAction){
         this.model=model;
         this.mixer=mixer;
+        this.model.position.y=0.5;
         this.currentAction=currentAction;
         this.animationMap=animationMap;
         this.animationMap.forEach((value,key)=>{
@@ -15,6 +16,10 @@ export class CharacterControls{
         this.camera=camera;
         this.toggleRun=true;
         
+        this.prevX= model.position.x;
+
+        this.prevZ= model.position.z;
+
         //this.updateCameraTarget(0,0)
         //
         this.walkDirection=new THREE.Vector3();
@@ -146,6 +151,8 @@ document.addEventListener('keydown',(e)=>this._onKeyDown(e),false);
         this.mixer.update(delta);
 
         if(this.currentAction=='Run'||this.currentAction=='Walk'){
+            this.prevX=this.model.position.x;
+            this.prevZ=this.model.position.z;
             var angleYCameraDirection=Math.atan2(
                 (this.camera.position.x-this.model.position.x),
                 (this.camera.position.z-this.model.position.z)
@@ -173,5 +180,17 @@ document.addEventListener('keydown',(e)=>this._onKeyDown(e),false);
     }
     getPosZ() {
         return this.model.position.z;
+    }
+     getPrevPosX() {
+        return this.prevX;
+    }
+    
+     getPrevPosZ() {
+        return this.prevZ;
+    }
+    setPrevPos(){
+        this.model.position.x= this.getPrevPosX()
+        
+        this.model.position.z= this.getPrevPosZ()
     }
 }

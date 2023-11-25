@@ -147,9 +147,7 @@ buttonLoginFB.addEventListener('click', e => {
 //Esenciales
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.x=0;
-camera.position.y=40;
-camera.position.z=30;
+
 let light = new THREE.DirectionalLight(0xffffff, 0.5);
 scene.add(light);
 let light2 = new THREE.AmbientLight(0xd58cff);
@@ -200,11 +198,34 @@ plane.rotation.x = Math.PI * 0.5
 scene.add( plane );
 */
 
+//Colisiones del mapa
+var mapColissions=[]
+
+//Qué mapa elegir
+function chooseMap(numero){
+    const nivel={
+    1:'Mapas/GCWFirstMap.glb',
+    2: 'Mapas/GCWSecondMap.glb',
+    3: 'Mapas/GCWThirdMap.glb'
+}
+    const nivelDefault='Mapas/GCWFirstMap.glb';
+    let nivelJugar=nivel[numero]||nivelDefault;
+    return nivelJugar
+}
+
 //Modelo del mapa
- new GLTFLoader().load('scenary.glb', function(gltf){
+ new GLTFLoader().load(chooseMap(2), function(gltf){
+     gltf.scene.position.x=0;
+    gltf.scene.position.z=14;
+    gltf.scene.traverse((hijo)=>{
+       
+      let cube2BB = new THREE.Box3();
+      cube2BB.setFromObject(hijo);
+      const helper = new THREE.Box3Helper( cube2BB, 0xffff00 );
+scene.add( helper );
+      mapColissions.push(cube2BB);
+    })
     scene.add(gltf.scene);
-    gltf.scene.position.x = 2;
-    gltf.scene.position.z = 10;
  });
 
 var charactercontrols;
@@ -262,8 +283,7 @@ const clock = new THREE.Clock();
 //Movimiento de camara
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping=true;
-controls.minDistance=40;
-controls.maxDistance=40;
+controls.minDistance=90;
 controls.enablePan=true;
 controls.autorotate=false;
 controls.enableRotate=false;
@@ -281,6 +301,12 @@ function checkCollisions(modelBB) {
         pickItem('ingredient', ingredients[1])
         dropItem('ingredient', ingredients[1])
     }
+    mapColissions.forEach((element,iterador) => {
+        if(iterador!=0)
+        if(modelBB.intersectsBox(element)){
+          charactercontrols.setPrevPos();
+        }
+    });
 }
 
 function pickItem(itemType,item) {
