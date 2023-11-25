@@ -56,6 +56,7 @@ const statsPlayer = {
     pts : 0,
     inventory : {
         items : [],
+        dishes: [],
         ingredients : []
     },
     position : {
@@ -83,7 +84,7 @@ async function login() {
             statsPlayer.uid = currentUser.uid
             statsPlayer.name = currentUser.displayName
             statsPlayer.pts = 0
-            statsPlayer.inventory = { items : [], ingredients : [] }
+            statsPlayer.inventory = { items : [], dishes : [], ingredients : [] }
 
             printStats()
 
@@ -169,8 +170,33 @@ const ingredients = [
     {
         "name": "Algas",
         "position": {"x": 10, "z": -10},
+    },
+    {
+        "name": "Salmon",
+        "position": {"x": -10, "z": -5},
     }
 ]
+
+const dishes = [
+    {
+        "name": "Plato vacio",
+        "ingredients": [],
+    },
+    {
+        "name": "Sushi",
+        "ingredients": [
+            ingredients[0],
+            ingredients[1],
+            ingredients[2],
+        ]
+    }
+]
+
+const platoMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+platoMesh.position.x = -5;
+platoMesh.position.z = -4;
+let platoBB = new THREE.Box3().setFromObject(platoMesh);
+scene.add(platoMesh);
 
 const arrozMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
 arrozMesh.position.x = ingredients[0].position.x;
@@ -183,6 +209,12 @@ algasMesh.position.x = ingredients[1].position.x;
 algasMesh.position.z = ingredients[1].position.z;
 let algasBB = new THREE.Box3().setFromObject(algasMesh);
 scene.add(algasMesh);
+
+const salmonMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+salmonMesh.position.x = ingredients[2].position.x;
+salmonMesh.position.z = ingredients[2].position.z;
+let salmonBB = new THREE.Box3().setFromObject(salmonMesh);
+scene.add(salmonMesh);
 
 //Skybox
 new THREE.TextureLoader().load("skibox.jpg",(texture)=>{
@@ -215,6 +247,7 @@ function writeUserData(userId, positionX, positionZ) {
         x: positionX,
         z: positionZ
     });
+    console.log(positionX,positionZ)
 }
 
 //Leer
@@ -271,6 +304,11 @@ controls.maxPolarAngle=Math.PI/2-0.05;
 controls.update();
 
 function checkCollisions(modelBB) {
+    if(modelBB.intersectsBox(platoBB)){
+        showAlert('press-button', "PULSA E PARA RECOGER EL PLATO")
+        pickItem('dish', dishes[0])
+        dropItem('dish', dishes[0])
+    }
     if(modelBB.intersectsBox(arrozBB)){
         showAlert('press-button', "PULSA E PARA RECOGER EL ARROZ")
         pickItem('ingredient', ingredients[0])
@@ -281,26 +319,44 @@ function checkCollisions(modelBB) {
         pickItem('ingredient', ingredients[1])
         dropItem('ingredient', ingredients[1])
     }
+    else if(modelBB.intersectsBox(salmonBB)){
+        showAlert('press-button', "PULSA E PARA RECOGER EL SALMON")
+        pickItem('ingredient', ingredients[2])
+        dropItem('ingredient', ingredients[2])
+    }
 }
 
 function pickItem(itemType,item) {
-    document.addEventListener('keydown', function(e) {
+
+    document.addEventListener('keyup', function keyPressed(e) {
         if(e.key == 'e' || e.key == 'E') {
-            if(itemType == 'ingredient') {
-                if(statsPlayer.inventory.ingredients.length <= 0) {
-                    statsPlayer.inventory.ingredients.push(item)
-                    showAlert('item-picked', "INGREDIENTE RECOGIDO")
-                    printInventory()
-                    console.log(statsPlayer)
-                }
+            
+            if(itemType == 'dish' && statsPlayer.inventory.dishes.length <= 0) {
+                statsPlayer.inventory.dishes.push(item)
+                showAlert('item-picked', "PLATO RECOGIDO")
+                printInventory()
             }
+            if(itemType == 'ingredient' && statsPlayer.inventory.ingredients.length <= 0) {
+                statsPlayer.inventory.ingredients.push(item)
+                showAlert('item-picked', "INGREDIENTE RECOGIDO")
+                printInventory()
+            }
+
         }
-    }, { once: true });
+    })
 }
 
 function dropItem(itemType, item) {
     document.addEventListener('keydown', function(e) {
         if(e.key == 'q' || e.key == 'Q') {
+            if(itemType == 'dish') {
+                if(statsPlayer.inventory.dishes.length > 0) {
+                    statsPlayer.inventory.dishes = [];
+                    showAlert('item-picked', "PLATILLO SOLTADO")
+                    printInventory()
+                    console.log(statsPlayer)
+                }
+            }
             if(itemType == 'ingredient') {
                 if(statsPlayer.inventory.ingredients.length > 0) {
                     statsPlayer.inventory.ingredients = [];
@@ -340,12 +396,21 @@ function showAlert(alertType, message) {
 
 printInventory()
 function printInventory() {
-    const inventoryList = document.getElementById('inventory-list')
+    const dishesList = document.getElementById('dishes-list')
+    const ingredientsList = document.getElementById('ingredients-list')
     const itemsList = document.getElementById('items-list')
 
+    if(statsPlayer.inventory.dishes.length > 0) {
+        statsPlayer.inventory.dishes.forEach((dish) => {
+            dishesList.insertAdjacentHTML('beforeend', `<li>${dish.name}</li>`);
+        })
+    }
+    else {
+        inventoryList.innerHTML = ''; 
+    }
     if(statsPlayer.inventory.ingredients.length > 0) {
         statsPlayer.inventory.ingredients.forEach((ingredient) => {
-            inventoryList.insertAdjacentHTML('beforeend', `<li>${ingredient.name}</li>`);
+            ingredientsList.insertAdjacentHTML('beforeend', `<li>${ingredient.name}</li>`);
         })
     }
     else {
