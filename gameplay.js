@@ -56,7 +56,7 @@ const statsPlayer = {
     pts : 0,
     inventory : {
         items : [],
-        ingredients : []
+        dishes: []
     },
     position : {
         x : 0,
@@ -83,7 +83,7 @@ async function login() {
             statsPlayer.uid = currentUser.uid
             statsPlayer.name = currentUser.displayName
             statsPlayer.pts = 0
-            statsPlayer.inventory = { items : [], ingredients : [] }
+            statsPlayer.inventory = { items : [], dishes : []}
 
             printStats()
 
@@ -146,8 +146,10 @@ buttonLoginFB.addEventListener('click', e => {
 */
 //Esenciales
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
+const camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+camera.position.x=0;
+camera.position.y=40;
+camera.position.z=30;
 let light = new THREE.DirectionalLight(0xffffff, 0.5);
 scene.add(light);
 let light2 = new THREE.AmbientLight(0xd58cff);
@@ -167,8 +169,33 @@ const ingredients = [
     {
         "name": "Algas",
         "position": {"x": 10, "z": -10},
+    },
+    {
+        "name": "Salmon",
+        "position": {"x": -10, "z": -5},
     }
 ]
+
+const dishes = [
+    {
+        "name": "Plato vacio",
+        "ingredients": [],
+    },
+    {
+        "name": "Sushi",
+        "ingredients": [
+            ingredients[0],
+            ingredients[1],
+            ingredients[2],
+        ]
+    }
+]
+
+const platoMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+platoMesh.position.x = -5;
+platoMesh.position.z = -4;
+let platoBB = new THREE.Box3().setFromObject(platoMesh);
+scene.add(platoMesh);
 
 const arrozMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
 arrozMesh.position.x = ingredients[0].position.x;
@@ -181,6 +208,12 @@ algasMesh.position.x = ingredients[1].position.x;
 algasMesh.position.z = ingredients[1].position.z;
 let algasBB = new THREE.Box3().setFromObject(algasMesh);
 scene.add(algasMesh);
+
+const salmonMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+salmonMesh.position.x = ingredients[2].position.x;
+salmonMesh.position.z = ingredients[2].position.z;
+let salmonBB = new THREE.Box3().setFromObject(salmonMesh);
+scene.add(salmonMesh);
 
 //Skybox
 new THREE.TextureLoader().load("skibox.jpg",(texture)=>{
@@ -236,6 +269,7 @@ function writeUserData(userId, positionX, positionZ) {
         x: positionX,
         z: positionZ
     });
+    console.log(positionX,positionZ)
 }
 
 //Leer
@@ -291,15 +325,22 @@ controls.maxPolarAngle=Math.PI/2-0.05;
 controls.update();
 
 function checkCollisions(modelBB) {
-    if(modelBB.intersectsBox(arrozBB)){
+    if(modelBB.intersectsBox(platoBB)){
+        showAlert('press-button', "PULSA E PARA RECOGER EL PLATO")
+        pickItem('dish', dishes[0])
+        dropItem('dish', dishes[0])
+    }
+    else if(modelBB.intersectsBox(arrozBB)){
         showAlert('press-button', "PULSA E PARA RECOGER EL ARROZ")
         pickItem('ingredient', ingredients[0])
-        dropItem('ingredient', ingredients[0])
     }
     else if(modelBB.intersectsBox(algasBB)){
         showAlert('press-button', "PULSA E PARA RECOGER LAS ALGAS")
         pickItem('ingredient', ingredients[1])
-        dropItem('ingredient', ingredients[1])
+    }
+    else if(modelBB.intersectsBox(salmonBB)){
+        showAlert('press-button', "PULSA E PARA RECOGER EL SALMON")
+        pickItem('ingredient', ingredients[2])
     }
     mapColissions.forEach((element,iterador) => {
         if(iterador!=0)
@@ -310,33 +351,60 @@ function checkCollisions(modelBB) {
 }
 
 function pickItem(itemType,item) {
-    document.addEventListener('keydown', function(e) {
+
+    document.addEventListener('keyup', function keyPressed(e) {
         if(e.key == 'e' || e.key == 'E') {
+            
+            if(itemType == 'dish' && statsPlayer.inventory.dishes.length <= 0) {
+                statsPlayer.inventory.dishes.push(item)
+                showAlert('item-picked', "PLATO RECOGIDO!")
+                printInventory()
+            }
+            // else {
+            //     showAlert('item-picked', "YA TIENES UN PLATO EN EL INVENTARIO!")
+            // }
             if(itemType == 'ingredient') {
-                if(statsPlayer.inventory.ingredients.length <= 0) {
-                    statsPlayer.inventory.ingredients.push(item)
-                    showAlert('item-picked', "INGREDIENTE RECOGIDO")
-                    printInventory()
-                    console.log(statsPlayer)
+                if(statsPlayer.inventory.dishes.length > 0) {
+                    if(statsPlayer.inventory.dishes[0].ingredients.length <= 0) {
+                        statsPlayer.inventory.dishes[0].ingredients.push(item)
+                        showAlert('item-picked', (item.name).toUpperCase() + " RECOGIDO!")
+                        printInventory()
+                    }
+                    else {
+                        let itemAlreadyExists = statsPlayer.inventory.dishes[0].ingredients.includes(item);
+
+                        if (!itemAlreadyExists) {
+                            statsPlayer.inventory.dishes[0].ingredients.push(item)
+                            showAlert('item-picked', "INGREDIENTE RECOGIDO");
+                            printInventory();
+                        } 
+                        // else {
+                        //     showAlert('item-picked', "YA TIENES ESTE INGREDIENTE EN EL PLATO");
+                        // }
+                    }
+                }
+                else {
+                    showAlert('item-picked', "DEBES TENER UN PLATO PARA RECOGER UN INGREDIENTE")
                 }
             }
+
         }
-    }, { once: true });
+    }, { once : true })
 }
 
 function dropItem(itemType, item) {
     document.addEventListener('keydown', function(e) {
         if(e.key == 'q' || e.key == 'Q') {
-            if(itemType == 'ingredient') {
-                if(statsPlayer.inventory.ingredients.length > 0) {
-                    statsPlayer.inventory.ingredients = [];
-                    showAlert('item-picked', "INGREDIENTE SOLTADO")
+            if(itemType == 'dish') {
+                if(statsPlayer.inventory.dishes.length > 0) {
+                    statsPlayer.inventory.dishes = [];
+                    showAlert('item-picked', "PLATILLO SOLTADO")
                     printInventory()
                     console.log(statsPlayer)
                 }
             }
         }
-    })
+    }, { once : true })
 }
 
 function showAlert(alertType, message) {
@@ -366,16 +434,28 @@ function showAlert(alertType, message) {
 
 printInventory()
 function printInventory() {
-    const inventoryList = document.getElementById('inventory-list')
+    const dishesList = document.getElementById('dishes-list')
+    const ingredientsList = document.getElementById('ingredients-list')
     const itemsList = document.getElementById('items-list')
+    
+    ingredientsList.innerHTML = ''; 
+    dishesList.innerHTML = ''; 
 
-    if(statsPlayer.inventory.ingredients.length > 0) {
-        statsPlayer.inventory.ingredients.forEach((ingredient) => {
-            inventoryList.insertAdjacentHTML('beforeend', `<li>${ingredient.name}</li>`);
+    if(statsPlayer.inventory.dishes.length > 0) {
+        statsPlayer.inventory.dishes.forEach((dish) => {
+            dishesList.insertAdjacentHTML('beforeend', `<li>${dish.name}</li>`);
         })
     }
     else {
-        inventoryList.innerHTML = ''; 
+        dishesList.innerHTML = ''; 
+    }
+    if(statsPlayer.inventory.dishes.length > 0) {
+        statsPlayer.inventory.dishes[0].ingredients.forEach((ingredient) => {
+            ingredientsList.insertAdjacentHTML('beforeend', `<li>${ingredient.name}</li>`);
+        })
+    }
+    else {
+        ingredientsList.innerHTML = ''; 
     }
 }
 
