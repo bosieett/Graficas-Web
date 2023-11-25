@@ -77,6 +77,13 @@ async function loginFB() {
     await signInWithPopup(auth, providerFB)
         .then((result) => {
             console.log(result);
+            const credentialFB = FacebookAuthProvider.credentialFromResult(result);
+            const tokenFB = credentialFB.accessToken;
+            // The signed-in user info.
+            currentUser = result.user;
+            console.log(currentUser);
+            writeUserData(currentUser.uid, 0, 0);
+            localStorage.setItem('currentPlayer', currentUser.uid)
             console.log('facebook signIn')
         }).catch((error) => {
             console.log(error);
