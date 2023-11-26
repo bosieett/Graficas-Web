@@ -34,6 +34,16 @@
 			padding: 0.4em;
 			margin-top: 2em;
 		}
+		#orders-container {
+			left: 0;
+			right: 0;
+			bottom: 0;
+			width: 20%;
+			text-align: center;
+			margin: 0 auto;
+			padding: 0.4em;
+			margin-bottom: 2em;
+		}
 		#contenedor-game-over {
 			margin: 0;
 			width: 100%;
@@ -74,7 +84,11 @@
 			<br>
 			Puntos: <span id="puntos-jugador"></span>
 		</div>
-		<div id="timer-container" class="gameplay-alert"><h2 style="margin: 0;" id="timer">2:00</h2></div>
+		<div id="timer-container" class="gameplay-alert"><h2 style="margin: 0;" id="timer"></h2></div>
+		<div id="orders-container" class="gameplay-alert">
+			<h4>Pedidos</h4>
+			<ul id="orders"></ul>
+		</div>
 		<div id="press-button-alert" class="gameplay-alert" style="display: none;"></div>
 		<div id="item-picked-alert" class="gameplay-alert" style="display: none;"></div>
 		<div id="inventory" class="gameplay-alert">
