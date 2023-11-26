@@ -300,6 +300,42 @@ function chooseMap(numero){
     scene.add(gltf.scene);
  });
 
+//Sonido
+const listener = new THREE.AudioListener();
+const backgroundMusic= new THREE.Audio(listener);
+const trashSound= new THREE.Audio(listener);
+const pickupSound= new THREE.Audio(listener);
+const dishSound= new THREE.Audio(listener);
+const happySound= new THREE.Audio(listener);
+const audioLoader= new THREE.AudioLoader();
+audioLoader.load("Audio/Zazie.mp3", function(buffer){
+    backgroundMusic.setBuffer(buffer);
+    backgroundMusic.setLoop(true);
+    backgroundMusic.setVolume(0.5);
+    backgroundMusic.play();
+})
+audioLoader.load("Audio/basura.wav", function(buffer){
+    trashSound.setBuffer(buffer);
+    trashSound.setLoop(false);
+    trashSound.setVolume(1.0);
+})
+audioLoader.load("Audio/recoger.wav", function(buffer){
+    pickupSound.setBuffer(buffer);
+    pickupSound.setLoop(false);
+    pickupSound.setVolume(1.0);
+})
+audioLoader.load("Audio/plato.wav", function(buffer){
+    dishSound.setBuffer(buffer);
+    dishSound.setLoop(false);
+    dishSound.setVolume(1.0);
+})
+audioLoader.load("Audio/clientefeliz.wav", function(buffer){
+    happySound.setBuffer(buffer);
+    happySound.setLoop(false);
+    happySound.setVolume(1.0);
+})
+camera.add(listener)
+
 var charactercontrols;
 
 //Escribir
@@ -404,6 +440,7 @@ function pickItem(itemType,item) {
                 showAlert('item-picked', "PLATO RECOGIDO!")
                 transformDish()
                 printInventory()
+                dishSound.play();
             }
             // else {
             //     showAlert('item-picked', "YA TIENES UN PLATO EN EL INVENTARIO!")
@@ -415,6 +452,7 @@ function pickItem(itemType,item) {
                         showAlert('item-picked', (item.name).toUpperCase() + " RECOGIDO!")
                         transformDish()
                         printInventory()
+                        pickupSound.play();
                     }
                     else {
                         let itemAlreadyExists = statsPlayer.inventory.dishes[0].ingredients.includes(item);
@@ -424,6 +462,7 @@ function pickItem(itemType,item) {
                             showAlert('item-picked', (item.name).toUpperCase() + " RECOGIDO")
                             transformDish()
                             printInventory();
+                            pickupSound.play();
                         } 
                         // else {
                         //     showAlert('item-picked', "YA TIENES ESTE INGREDIENTE EN EL PLATO");
@@ -449,6 +488,7 @@ function dropItem(itemType, item) {
                     showAlert('item-picked', "PLATILLO SOLTADO")
                     transformDish()
                     printInventory()
+                    trashSound.play();
                     console.log(statsPlayer)
                 }
             }
