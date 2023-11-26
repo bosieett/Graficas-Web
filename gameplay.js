@@ -178,21 +178,49 @@ document.getElementById('gameplay-container').appendChild( renderer.domElement )
 const cubeGeometry = new THREE.BoxGeometry(3, 3, 3);
 const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff1000 });
 
+const plates = {
+    "position": {
+        1: {"x": -10, "z": -1},
+        2: {"x": -16, "z": -30},
+        3: {"x": 25, "z": -10}
+    }
+}
+
+const trash = {
+    "position": {
+        1: {"x": 10, "z": -16},
+        2: {"x": 16, "z": -30},
+        3: {"x": 10, "z": -27}
+    }
+}
+
 const ingredients = [
     {
         "name": "Arroz",
-        "position": {"x": 7, "z": -30},
+        "position": {
+            1: {"x": 6, "z": -4},
+            2: {"x": 7, "z": -30},
+            3: {"x": 14, "z": 2},
+        },
         "boundingBox": ""
     },
     {
         "name": "Algas",
-        "position": {"x": -8, "z": -30},
+        "position":  {
+            1: {"x": 2, "z": -18},
+            2: {"x": -8, "z": -30},
+            3: {"x": 14, "z": -10}
+        },
         "boundingBox": ""
 
     },
     {
         "name": "Salmon",
-        "position": {"x": 0, "z": -18},
+        "position": {
+            1: {"x": -9, "z": -20},
+            2: {"x": 0, "z": -18},
+            3: {"x": 11, "z": 16}
+        },
         "boundingBox": ""
     }
 ]
@@ -236,8 +264,9 @@ const customers = [
         "pts": 80,
         "waitingTime": 30000,
         "position": {
-            "x": 3,
-            "z": 3
+            1: {"x": -2, "z": 3},
+            2: {"x": 3, "z": 3},
+            3: {"x": -6, "z": -6},
         },
         "mesh": "",
         "boundingBox": "",
@@ -249,35 +278,39 @@ const customers = [
 
 const orders = []
 
+//Mapa a elegir
+const indexMapa = 3
+
+
 const basuraMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-basuraMesh.position.x = -17;
-basuraMesh.position.z = -30;
+basuraMesh.position.x = trash.position[indexMapa].x;
+basuraMesh.position.z = trash.position[indexMapa].z;
 let basuraBB = new THREE.Box3().setFromObject(basuraMesh);
 scene.add(basuraMesh);
 
 const platoMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-platoMesh.position.x = 16;
-platoMesh.position.z = -30;
+platoMesh.position.x = plates.position[indexMapa].x;
+platoMesh.position.z = plates.position[indexMapa].z
 let platoBB = new THREE.Box3().setFromObject(platoMesh);
 scene.add(platoMesh);
 
 const arrozMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-arrozMesh.position.x = ingredients[0].position.x;
-arrozMesh.position.z = ingredients[0].position.z;
+arrozMesh.position.x = ingredients[0].position[indexMapa].x;
+arrozMesh.position.z = ingredients[0].position[indexMapa].z;
 let arrozBB = new THREE.Box3().setFromObject(arrozMesh);
 ingredients[0].boundingBox = arrozBB
 scene.add(arrozMesh);
 
 const algasMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-algasMesh.position.x = ingredients[1].position.x;
-algasMesh.position.z = ingredients[1].position.z;
+algasMesh.position.x = ingredients[1].position[indexMapa].x;
+algasMesh.position.z = ingredients[1].position[indexMapa].z;
 let algasBB = new THREE.Box3().setFromObject(algasMesh);
 ingredients[1].boundingBox = algasBB
 scene.add(algasMesh);
 
 const salmonMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-salmonMesh.position.x = ingredients[2].position.x;
-salmonMesh.position.z = ingredients[2].position.z;
+salmonMesh.position.x = ingredients[2].position[indexMapa].x;
+salmonMesh.position.z = ingredients[2].position[indexMapa].z;
 let salmonBB = new THREE.Box3().setFromObject(salmonMesh);
 ingredients[2].boundingBox = salmonBB
 scene.add(salmonMesh);
@@ -298,6 +331,7 @@ plane.rotation.x = Math.PI * 0.5
 scene.add( plane );
 */
 
+
 //Colisiones del mapa
 var mapColissions=[]
 
@@ -314,7 +348,7 @@ function chooseMap(numero){
 }
 
 //Modelo del mapa
- new GLTFLoader().load(chooseMap(2), function(gltf){
+ new GLTFLoader().load(chooseMap(indexMapa), function(gltf){
      
     gltf.scene.position.x = 2;
     gltf.scene.position.z = 5;
@@ -383,7 +417,7 @@ function writeUserData(userId, positionX, positionZ) {
         x: positionX,
         z: positionZ
     });
-    //console.log(positionX,positionZ)
+    console.log(positionX,positionZ)
 }
 
 //Leer
@@ -443,8 +477,8 @@ controls.update();
 //SPAWNEAR CLIENTES
 function spawnCustomer(customer) { 
     const clientMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    clientMesh.position.x = customer.position.x;
-    clientMesh.position.z = customer.position.z;
+    clientMesh.position.x = customer.position[indexMapa].x;
+    clientMesh.position.z = customer.position[indexMapa].z;
     let clientBB = new THREE.Box3().setFromObject(clientMesh);
     scene.add(clientMesh);
 
@@ -455,7 +489,8 @@ function spawnCustomer(customer) {
 }
 
 function deliverCustomerOrder(customer) {
-    document.addEventListener('keyup', function keyPressed(e) {
+
+    function keyPressed(e) {
         if(e.key == 'e' || e.key == 'E') {
             if(!customer.orderDelivered) {
                 if (!statsPlayer.inventory.dishes[0]) {
@@ -481,23 +516,38 @@ function deliverCustomerOrder(customer) {
                     showAlert('item-picked', "ORDEN EQUIVOCADA!")
                 }
             }
+            else {
+                document.removeEventListener('keyup', keyPressed);
+            }
         }
-    })
+    }
+
+    document.addEventListener('keyup', keyPressed)
 }
 
 //TOMAR ORDEN Y EMPEZAR LA CUENTA REGRESIVA DEL CLIENTE
 function takeCostumerOrder(customer) {
-    document.addEventListener('keypress', function keyPressed(e) {
+
+    function keyPressed(e) {
         if(e.key == 'e' || e.key == 'E') {
-            customer.orderTaken = true
-            printOrders()
-            takeorderSound.play()
-            //INICIA CONTADOR DE ESPERA DEL CLIENTE, PARA DESPUES DESPAWNEAR
-            setTimeout(() => {
-                despawnCustomer(customer);
-            }, customer.waitingTime);
+            if(!customer.orderTaken) {
+                customer.orderTaken = true
+                printOrders()
+                takeorderSound.play()
+                showAlert('item-picked', "ORDEN TOMADA: " + (customer.order.name).toUpperCase())
+
+                //INICIA CONTADOR DE ESPERA DEL CLIENTE, PARA DESPUES DESPAWNEAR
+                setTimeout(() => {
+                    despawnCustomer(customer);
+                }, customer.waitingTime);
+            }
+            else {
+                document.removeEventListener('keyup', keyPressed);
+            }
         }
-    })
+    }
+
+    document.addEventListener('keypress', keyPressed)
 }
 
 //DESPAWNEAR CLIENTES
@@ -533,7 +583,7 @@ function checkCollisions(modelBB) {
                     showAlert('press-button', "PULSA E PARA TOMAR ORDEN")
                     takeCostumerOrder(customer)
                 }
-                else if(customer.orderDelivered == false) {
+                if(customer.orderDelivered == false) {
                     showAlert('press-button', "PULSA E PARA ENTREGAR ORDEN")
                     deliverCustomerOrder(customer)
                 }
@@ -598,7 +648,7 @@ function pickItem(itemType,item) {
 }
 
 function dropItem(itemType, item) {
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function drop(e) {
         if(e.key == 'q' || e.key == 'Q') {
             if(itemType == 'dish') {
                 if(statsPlayer.inventory.dishes.length > 0) {
@@ -612,7 +662,7 @@ function dropItem(itemType, item) {
                 }
             }
         }
-    }, { once : true })
+    })
 }
 
 function transformDish() {
@@ -729,33 +779,33 @@ function gameOver() {
     puntuacion.innerText = statsPlayer.pts
 
     //Leer Puntuaciones
-const PtsCountRef = ref(db, 'puntuacion');
-onValue(PtsCountRef, (snapshot) => {
-    const data = snapshot.val();
-    let siExiste = 0;
-    
-    Object.entries(data).forEach(([key, value]) => {
-    console.log(`${key} ${value.Puntos}`);
+    const PtsCountRef = ref(db, 'puntuacion');
+    onValue(PtsCountRef, (snapshot) => {
+        const data = snapshot.val();
+        let siExiste = 0;
         
-    if(statsPlayer.uid == key){
-        console.log("Si Existes, puntuacion guardad es: " + `${value.Puntos}`);
-        siExiste = 1;
-        if(statsPlayer.pts > value.Puntos){
+        Object.entries(data).forEach(([key, value]) => {
+        console.log(`${key} ${value.Puntos}`);
+            
+        if(statsPlayer.uid == key){
+            console.log("Si Existes, puntuacion guardad es: " + `${value.Puntos}`);
+            siExiste = 1;
+            if(statsPlayer.pts > value.Puntos){
+                const HighScore = document.getElementById('HighScore');
+                HighScore.innerText = "¡Nueva Puntuacion Mas Alta!";
+                writePuntuacionData(statsPlayer.uid, statsPlayer.pts);
+                console.log("Ya existias, Nueva Puntuacion Mas Alta: " + statsPlayer.pts);
+            }
+        }
+
+        });
+        if(siExiste == 0){//Primera vez que juega
             const HighScore = document.getElementById('HighScore');
             HighScore.innerText = "¡Nueva Puntuacion Mas Alta!";
+            console.log("No tenias puntuacion, ahi te va una nueva");
             writePuntuacionData(statsPlayer.uid, statsPlayer.pts);
-            console.log("Ya existias, Nueva Puntuacion Mas Alta: " + statsPlayer.pts);
         }
-    }
-
     });
-    if(siExiste == 0){//Primera vez que juega
-        const HighScore = document.getElementById('HighScore');
-        HighScore.innerText = "¡Nueva Puntuacion Mas Alta!";
-        console.log("No tenias puntuacion, ahi te va una nueva");
-        writePuntuacionData(statsPlayer.uid, statsPlayer.pts);
-    }
-});
 
 }
 
