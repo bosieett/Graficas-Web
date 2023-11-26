@@ -405,6 +405,9 @@ function deliverCustomerOrder(customer) {
                 else if(statsPlayer.inventory.dishes[0].name == customer.order.name) {
                     statsPlayer.pts += customer.pts
                     printStats()    
+                    customer.orderDelivered = true
+                    customer.boundingBox = null
+                    despawnCustomer(customer);
                     printOrders()    
                     if(statsPlayer.inventory.dishes.length > 0) {
                         statsPlayer.inventory.dishes[0].ingredients = []
@@ -413,9 +416,6 @@ function deliverCustomerOrder(customer) {
                         transformDish()
                         printInventory()
                     }
-                    customer.orderDelivered = true
-                    customer.boundingBox = null
-                    despawnCustomer(customer);
                 }
                 else {
                     showAlert('item-picked', "ORDEN EQUIVOCADA!")
@@ -632,7 +632,7 @@ printOrders()
 function printOrders() {
     const contenedorOrdenes = document.getElementById('orders')
     contenedorOrdenes.innerHTML = ''
-    customers.filter(customer => customer.orderTaken === true)
+    customers.filter(customer => customer.orderTaken && !customer.orderDelivered)
     .forEach(customer => {  
         contenedorOrdenes.insertAdjacentHTML('beforeend', `<li>${customer.order.name}</li>`)
     })
