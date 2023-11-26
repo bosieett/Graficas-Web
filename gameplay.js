@@ -175,8 +175,17 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.getElementById('gameplay-container').appendChild( renderer.domElement );
 
-const cubeGeometry = new THREE.BoxGeometry(3, 3, 3);
+const cubeGeometry = new THREE.BoxGeometry(70, 3, 2);
+const cubeGeometry2 = new THREE.BoxGeometry(2, 3, 70);
 const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff1000 });
+const downCollision = new THREE.Mesh(cubeGeometry, cubeMaterial)
+downCollision.position.z=19
+const upCollision = new THREE.Mesh(cubeGeometry, cubeMaterial)
+upCollision.position.z=-37
+const leftCollision = new THREE.Mesh(cubeGeometry2, cubeMaterial)
+leftCollision.position.x=-31
+const rightCollision = new THREE.Mesh(cubeGeometry2, cubeMaterial)
+rightCollision.position.x=31
 
 const ingredients = [
     {
@@ -381,6 +390,11 @@ function chooseMap(numero){
     */
       mapColissions.push(cube2BB);
     })
+    
+ mapColissions.push(new THREE.Box3().setFromObject(downCollision))
+ mapColissions.push(new THREE.Box3().setFromObject(upCollision))
+ mapColissions.push(new THREE.Box3().setFromObject(leftCollision))
+ mapColissions.push(new THREE.Box3().setFromObject(rightCollision))
     scene.add(gltf.scene);
  });
 
