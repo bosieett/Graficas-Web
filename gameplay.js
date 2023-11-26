@@ -76,7 +76,7 @@ async function login() {
 
             // The signed-in user info.
             currentUser = result.user;
-            writeUserData(currentUser.uid, 0, 0);
+            writeUserData(currentUser.uid, 5, 0);
 
             localStorage.setItem('currentPlayer', currentUser.uid)
             localStorage.setItem('currentPlayerName', currentUser.displayName)
@@ -87,6 +87,7 @@ async function login() {
             statsPlayer.inventory = { items : [], dishes : []}
 
             printStats()
+            location.href = location.href;
 
         }).catch((error) => {
             // Handle Errors here.
@@ -105,7 +106,22 @@ async function loginFB() {
     await signInWithPopup(auth, providerFB)
         .then((result) => {
             console.log(result);
-            console.log('facebook signIn')
+            const credentialFB = FacebookAuthProvider.credentialFromResult(result);
+            const tokenFB = credentialFB.accessToken;
+            // The signed-in user info.
+            currentUser = result.user;
+            writeUserData(currentUser.uid, 5, 0);
+            
+            localStorage.setItem('currentPlayer', currentUser.uid)
+            localStorage.setItem('currentPlayerName', currentUser.displayName)
+
+            statsPlayer.uid = currentUser.uid
+            statsPlayer.name = currentUser.displayName
+            statsPlayer.pts = 0
+            statsPlayer.inventory = { items : [], dishes : []}
+
+            printStats()
+            location.href = location.href;
         }).catch((error) => {
             console.log(error);
         });
@@ -360,13 +376,14 @@ camera.add(listener)
 
 var charactercontrols;
 
+
 //Escribir
 function writeUserData(userId, positionX, positionZ) {
     set(ref(db, 'players/' + userId), {
         x: positionX,
         z: positionZ
     });
-    console.log(positionX,positionZ)
+    //console.log(positionX,positionZ)
 }
 
 //Leer
@@ -698,11 +715,48 @@ function printTimer() {
     timer.innerText = Math.ceil(timerCounter/60) + ' segundos restantes'
 }
 
+//Subir nueva HighScore
+function writePuntuacionData(userId, Pts) {
+    set(ref(db, 'puntuacion/' + userId), {
+        Puntos: Pts
+    });
+}
+
 function gameOver() {
     const gameOver = document.getElementById('contenedor-game-over')
     const puntuacion = document.getElementById('puntuacion-final')
     gameOver.style.display = 'block'
     puntuacion.innerText = statsPlayer.pts
+
+    //Leer Puntuaciones
+const PtsCountRef = ref(db, 'puntuacion');
+onValue(PtsCountRef, (snapshot) => {
+    const data = snapshot.val();
+    let siExiste = 0;
+    
+    Object.entries(data).forEach(([key, value]) => {
+    console.log(`${key} ${value.Puntos}`);
+        
+    if(statsPlayer.uid == key){
+        console.log("Si Existes, puntuacion guardad es: " + `${value.Puntos}`);
+        siExiste = 1;
+        if(statsPlayer.pts > value.Puntos){
+            const HighScore = document.getElementById('HighScore');
+            HighScore.innerText = "¡Nueva Puntuacion Mas Alta!";
+            writePuntuacionData(statsPlayer.uid, statsPlayer.pts);
+            console.log("Ya existias, Nueva Puntuacion Mas Alta: " + statsPlayer.pts);
+        }
+    }
+
+    });
+    if(siExiste == 0){//Primera vez que juega
+        const HighScore = document.getElementById('HighScore');
+        HighScore.innerText = "¡Nueva Puntuacion Mas Alta!";
+        console.log("No tenias puntuacion, ahi te va una nueva");
+        writePuntuacionData(statsPlayer.uid, statsPlayer.pts);
+    }
+});
+
 }
 
 function animate() {
