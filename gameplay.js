@@ -249,38 +249,90 @@ const customers = [
 
 const orders = []
 
-const basuraMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+let basuraMesh
+let basuraBB
+new GLTFLoader().load('Models/Environment/glTF/Environment_Pot_2_Empty.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(2,2,2)
+    basuraMesh=model;
 basuraMesh.position.x = -17;
 basuraMesh.position.z = -30;
-let basuraBB = new THREE.Box3().setFromObject(basuraMesh);
-scene.add(basuraMesh);
+ basuraBB = new THREE.Box3().setFromObject(basuraMesh);
+scene.add(basuraMesh);})
 
-const platoMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+let platoMesh;
+let platoBB
+new GLTFLoader().load('Models/Environment/glTF/Environment_Bowl.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(5,5,5)
+    platoMesh=model;
 platoMesh.position.x = 16;
 platoMesh.position.z = -30;
-let platoBB = new THREE.Box3().setFromObject(platoMesh);
+platoBB = new THREE.Box3().setFromObject(platoMesh);
 scene.add(platoMesh);
+})
 
-const arrozMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+let arrozMesh
+new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Rice.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(5,5,5)
+    arrozMesh=model;
 arrozMesh.position.x = ingredients[0].position.x;
 arrozMesh.position.z = ingredients[0].position.z;
 let arrozBB = new THREE.Box3().setFromObject(arrozMesh);
 ingredients[0].boundingBox = arrozBB
-scene.add(arrozMesh);
+scene.add(arrozMesh);})
 
-const algasMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+let algasMesh
+new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Nori.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.position.y=0.3;
+    model.scale.set(5,5,5)
+    algasMesh=model;
 algasMesh.position.x = ingredients[1].position.x;
 algasMesh.position.z = ingredients[1].position.z;
 let algasBB = new THREE.Box3().setFromObject(algasMesh);
-ingredients[1].boundingBox = algasBB
+ingredients[1].boundingBox = algasBB;
 scene.add(algasMesh);
+})
 
-const salmonMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-salmonMesh.position.x = ingredients[2].position.x;
-salmonMesh.position.z = ingredients[2].position.z;
-let salmonBB = new THREE.Box3().setFromObject(salmonMesh);
-ingredients[2].boundingBox = salmonBB
-scene.add(salmonMesh);
+
+let salmonMesh
+new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(5,5,5)
+    salmonMesh=model;
+    salmonMesh.position.x = ingredients[2].position.x;
+    salmonMesh.position.z = ingredients[2].position.z;
+    let salmonBB = new THREE.Box3().setFromObject(salmonMesh);
+    ingredients[2].boundingBox = salmonBB
+    scene.add(salmonMesh);
+})
 
 //Skybox
 new THREE.TextureLoader().load("skibox.jpg",(texture)=>{
@@ -440,9 +492,53 @@ controls.enableRotate=false;
 controls.maxPolarAngle=Math.PI/2-0.05;
 controls.update();
 
+//MODELO DE CLIENTE
+var arrCustModels=[];
+new GLTFLoader().load('Rabbit_Purple.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+new GLTFLoader().load('Rabbit_Grey.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+new GLTFLoader().load('Rabbit_Cyan.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+new GLTFLoader().load('Rabbit_Blond.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+
 //SPAWNEAR CLIENTES
-function spawnCustomer(customer) { 
-    const clientMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+function spawnCustomer(customer) {
+    const random = Math.floor(Math.random() * arrCustModels.length);
+    const clientMesh = arrCustModels[random];
     clientMesh.position.x = customer.position.x;
     clientMesh.position.z = customer.position.z;
     let clientBB = new THREE.Box3().setFromObject(clientMesh);
@@ -463,10 +559,7 @@ function deliverCustomerOrder(customer) {
                 }
                 else if(statsPlayer.inventory.dishes[0].name == customer.order.name) {
                     statsPlayer.pts += customer.pts
-                    printStats()    
-                    customer.orderDelivered = true
-                    customer.boundingBox = null
-                    despawnCustomer(customer);
+                    printStats()
                     printOrders()    
                     if(statsPlayer.inventory.dishes.length > 0) {
                         statsPlayer.inventory.dishes[0].ingredients = []
@@ -476,6 +569,9 @@ function deliverCustomerOrder(customer) {
                         printInventory()
                         happySound.play()
                     }
+                    customer.orderDelivered = true
+                    customer.boundingBox = null
+                    despawnCustomer(customer);
                 }
                 else {
                     showAlert('item-picked', "ORDEN EQUIVOCADA!")
