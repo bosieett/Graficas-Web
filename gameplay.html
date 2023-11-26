@@ -25,6 +25,29 @@
 			top: 0;
 			right: 0;
 		}
+		#timer-container {
+			left: 0;
+			right: 0;
+			width: 20%;
+			text-align: center;
+			margin: 0 auto;
+			padding: 0.4em;
+			margin-top: 2em;
+		}
+		#contenedor-game-over {
+			margin: 0;
+			width: 100%;
+			height: 100%;
+			text-align: center;
+		}
+		.contenido-game-over {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
 		ul {
 			padding-left: 1em;
 		}
@@ -51,6 +74,7 @@
 			<br>
 			Puntos: <span id="puntos-jugador"></span>
 		</div>
+		<div id="timer-container" class="gameplay-alert"><h2 style="margin: 0;" id="timer">2:00</h2></div>
 		<div id="press-button-alert" class="gameplay-alert" style="display: none;"></div>
 		<div id="item-picked-alert" class="gameplay-alert" style="display: none;"></div>
 		<div id="inventory" class="gameplay-alert">
@@ -61,6 +85,12 @@
 			<ul id="ingredients-list"></ul>
 			<h3>Items</h3>
 			<ul id="items-list"></ul>
+		</div>
+		<div id="contenedor-game-over" class="gameplay-alert" style="display: none;">
+			<div class="contenido-game-over">
+				<h1>GAME OVER</h1>
+				<h2>Puntuacion final: <span id="puntuacion-final"></span></h2>
+			</div>
 		</div>
 	</div>
 

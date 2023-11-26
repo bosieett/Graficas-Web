@@ -49,6 +49,7 @@ const providerFB = new FacebookAuthProvider();
 const db = getDatabase();
 
 let currentUser;
+let timerCounter = 7200;
 
 const statsPlayer = {
     uid : localStorage.getItem('currentPlayer'),
@@ -171,22 +172,39 @@ const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff1000 });
 const ingredients = [
     {
         "name": "Arroz",
-        "position": {"x": 5, "z": 5},
+        "position": {"x": 7, "z": -30},
     },
     {
         "name": "Algas",
-        "position": {"x": 10, "z": -10},
+        "position": {"x": -8, "z": -30},
     },
     {
         "name": "Salmon",
-        "position": {"x": -10, "z": -5},
+        "position": {"x": 0, "z": -18},
     }
 ]
 
 const dishes = [
     {
+        "name": "Plato del jugador",
+        "ingredients": [],
+    },
+    {
         "name": "Plato vacio",
         "ingredients": [],
+    },
+    {
+        "name": "Tazon de arroz",
+        "ingredients": [
+            ingredients[0]
+        ]
+    },
+    {
+        "name": "Onigiri",
+        "ingredients": [
+            ingredients[0],
+            ingredients[1]
+        ]
     },
     {
         "name": "Sushi",
@@ -198,9 +216,26 @@ const dishes = [
     }
 ]
 
+const clientes = [
+    {
+        "id": 1,
+        "orden": dishes[2],
+        "pago": 80,
+        "tiempoEspera": 30,
+        "posicionX": 3,
+        "posicionZ": 5
+    }
+]
+
+const basuraMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+basuraMesh.position.x = -17;
+basuraMesh.position.z = -30;
+let basuraBB = new THREE.Box3().setFromObject(basuraMesh);
+scene.add(basuraMesh);
+
 const platoMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-platoMesh.position.x = -5;
-platoMesh.position.z = -4;
+platoMesh.position.x = 16;
+platoMesh.position.z = -30;
 let platoBB = new THREE.Box3().setFromObject(platoMesh);
 scene.add(platoMesh);
 
@@ -257,7 +292,7 @@ function chooseMap(numero){
  new GLTFLoader().load(chooseMap(2), function(gltf){
      
     gltf.scene.position.x = 2;
-    gltf.scene.position.z = 10;
+    gltf.scene.position.z = 5;
     gltf.scene.traverse((hijo)=>{
        
       let cube2BB = new THREE.Box3();
@@ -280,7 +315,7 @@ function writeUserData(userId, positionX, positionZ) {
         x: positionX,
         z: positionZ
     });
-    //console.log(positionX,positionZ)
+    console.log(positionX,positionZ)
 }
 
 //Leer
@@ -338,10 +373,13 @@ controls.maxPolarAngle=Math.PI/2-0.05;
 controls.update();
 
 function checkCollisions(modelBB) {
+    if(modelBB.intersectsBox(basuraBB)){
+        showAlert('press-button', "PULSA Q PARA TIRAR EL PLATO")
+        dropItem('dish', dishes[0])
+    }
     if(modelBB.intersectsBox(platoBB)){
         showAlert('press-button', "PULSA E PARA RECOGER EL PLATO")
         pickItem('dish', dishes[0])
-        dropItem('dish', dishes[0])
     }
     else if(modelBB.intersectsBox(arrozBB)){
         showAlert('press-button', "PULSA E PARA RECOGER EL ARROZ")
@@ -371,6 +409,7 @@ function pickItem(itemType,item) {
             if(itemType == 'dish' && statsPlayer.inventory.dishes.length <= 0) {
                 statsPlayer.inventory.dishes.push(item)
                 showAlert('item-picked', "PLATO RECOGIDO!")
+                transformDish()
                 printInventory()
             }
             // else {
@@ -381,6 +420,7 @@ function pickItem(itemType,item) {
                     if(statsPlayer.inventory.dishes[0].ingredients.length <= 0) {
                         statsPlayer.inventory.dishes[0].ingredients.push(item)
                         showAlert('item-picked', (item.name).toUpperCase() + " RECOGIDO!")
+                        transformDish()
                         printInventory()
                     }
                     else {
@@ -388,7 +428,8 @@ function pickItem(itemType,item) {
 
                         if (!itemAlreadyExists) {
                             statsPlayer.inventory.dishes[0].ingredients.push(item)
-                            showAlert('item-picked', "INGREDIENTE RECOGIDO");
+                            showAlert('item-picked', (item.name).toUpperCase() + " RECOGIDO")
+                            transformDish()
                             printInventory();
                         } 
                         // else {
@@ -410,14 +451,41 @@ function dropItem(itemType, item) {
         if(e.key == 'q' || e.key == 'Q') {
             if(itemType == 'dish') {
                 if(statsPlayer.inventory.dishes.length > 0) {
-                    statsPlayer.inventory.dishes = [];
+                    statsPlayer.inventory.dishes[0].ingredients = []
+                    statsPlayer.inventory.dishes.splice(0, 1)
                     showAlert('item-picked', "PLATILLO SOLTADO")
+                    transformDish()
                     printInventory()
                     console.log(statsPlayer)
                 }
             }
         }
     }, { once : true })
+}
+
+function transformDish() {
+    if(statsPlayer.inventory.dishes[0]) {
+        let currentIngredients = new Set(statsPlayer.inventory.dishes[0].ingredients);
+    
+        for (let i = 1; i < dishes.length; i++) {
+            const dish = dishes[i];
+            let dishIngredients = new Set(dish.ingredients);
+    
+            if (setsEqual(currentIngredients, dishIngredients)) {
+                statsPlayer.inventory.dishes[0].name = dish.name;
+                break;
+            }
+        }
+    }
+}
+
+// Función para comparar dos sets (conjuntos)
+function setsEqual(set1, set2) {
+    if (set1.size !== set2.size) return false;
+    for (let item of set1) {
+        if (!set2.has(item)) return false;
+    }
+    return true;
 }
 
 function showAlert(alertType, message) {
@@ -480,6 +548,18 @@ function printStats() {
     puntosJugador.innerText = statsPlayer.pts
 }
 
+function printTimer() {
+    const timer = document.getElementById('timer')
+    timer.innerText = Math.ceil(timerCounter/60) + ' segundos restantes'
+}
+
+function gameOver() {
+    const gameOver = document.getElementById('contenedor-game-over')
+    const puntuacion = document.getElementById('puntuacion-final')
+    gameOver.style.display = 'block'
+    puntuacion.innerText = statsPlayer.pts
+}
+
 function animate() {
     
     requestAnimationFrame(animate);
@@ -495,6 +575,12 @@ function animate() {
             checkCollisions(modelBB);
 
             writeUserData(statsPlayer.uid,charactercontrols.getPosX(),charactercontrols.getPosZ());
+
+            timerCounter--;
+            printTimer()
+            if(timerCounter == 0) {
+                gameOver()
+            }
 
         }
 
