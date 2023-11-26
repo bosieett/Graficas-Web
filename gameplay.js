@@ -405,27 +405,28 @@ function spawnCustomer(customer) {
 function deliverCustomerOrder(customer) {
     document.addEventListener('keyup', function keyPressed(e) {
         if(e.key == 'e' || e.key == 'E') {
-
-            if (!statsPlayer.inventory.dishes[0]) {
-                showAlert('item-picked', "NO TIENES PLATILLOS EN EL INVENTARIO!")
-            }
-            else if(statsPlayer.inventory.dishes[0].name == customer.order.name) {
-                statsPlayer.pts += customer.pts
-                printStats()    
-                printOrders()    
-                if(statsPlayer.inventory.dishes.length > 0) {
-                    statsPlayer.inventory.dishes[0].ingredients = []
-                    statsPlayer.inventory.dishes.splice(0, 1)
-                    showAlert('item-picked', "ORDEN ENTREGADA!")
-                    transformDish()
-                    printInventory()
+            if(!customer.orderDelivered) {
+                if (!statsPlayer.inventory.dishes[0]) {
+                    showAlert('item-picked', "NO TIENES PLATILLOS EN EL INVENTARIO!")
                 }
-                customer.orderDelivered = true
-                customer.boundingBox = null
-                despawnCustomer(customer);
-            }
-            else {
-                showAlert('item-picked', "ORDEN EQUIVOCADA!")
+                else if(statsPlayer.inventory.dishes[0].name == customer.order.name) {
+                    statsPlayer.pts += customer.pts
+                    printStats()    
+                    printOrders()    
+                    if(statsPlayer.inventory.dishes.length > 0) {
+                        statsPlayer.inventory.dishes[0].ingredients = []
+                        statsPlayer.inventory.dishes.splice(0, 1)
+                        showAlert('item-picked', "ORDEN ENTREGADA!")
+                        transformDish()
+                        printInventory()
+                    }
+                    customer.orderDelivered = true
+                    customer.boundingBox = null
+                    despawnCustomer(customer);
+                }
+                else {
+                    showAlert('item-picked', "ORDEN EQUIVOCADA!")
+                }
             }
         }
     })
