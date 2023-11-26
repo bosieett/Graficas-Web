@@ -323,6 +323,7 @@ const trashSound= new THREE.Audio(listener);
 const pickupSound= new THREE.Audio(listener);
 const dishSound= new THREE.Audio(listener);
 const happySound= new THREE.Audio(listener);
+const takeorderSound= new THREE.Audio(listener);
 const audioLoader= new THREE.AudioLoader();
 audioLoader.load("Audio/Zazie.mp3", function(buffer){
     backgroundMusic.setBuffer(buffer);
@@ -349,6 +350,11 @@ audioLoader.load("Audio/clientefeliz.wav", function(buffer){
     happySound.setBuffer(buffer);
     happySound.setLoop(false);
     happySound.setVolume(1.0);
+})
+audioLoader.load("Audio/tomarorden.wav", function(buffer){
+    takeorderSound.setBuffer(buffer);
+    takeorderSound.setLoop(false);
+    takeorderSound.setVolume(1.0);
 })
 camera.add(listener)
 
@@ -451,6 +457,7 @@ function deliverCustomerOrder(customer) {
                         showAlert('item-picked', "ORDEN ENTREGADA!")
                         transformDish()
                         printInventory()
+                        happySound.play()
                     }
                 }
                 else {
@@ -467,7 +474,7 @@ function takeCostumerOrder(customer) {
         if(e.key == 'e' || e.key == 'E') {
             customer.orderTaken = true
             printOrders()
-
+            takeorderSound.play()
             //INICIA CONTADOR DE ESPERA DEL CLIENTE, PARA DESPUES DESPAWNEAR
             setTimeout(() => {
                 despawnCustomer(customer);
