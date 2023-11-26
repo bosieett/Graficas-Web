@@ -226,6 +226,7 @@ const customers = [
         "mesh": "",
         "boundingBox": "",
         "orderTaken": false,
+        "orderDelivered": false,
         "spawned": false
     }
 ]
@@ -412,6 +413,7 @@ function deliverCustomerOrder(customer) {
                     transformDish()
                     printInventory()
                 }
+                customer.orderDelivered = true
                 despawnCustomer(customer);
             }
             else {
@@ -469,7 +471,7 @@ function checkCollisions(modelBB) {
                     showAlert('press-button', "PULSA E PARA TOMAR ORDEN")
                     takeCostumerOrder(customer)
                 }
-                else {
+                else if(customer.orderDelivered == false) {
                     showAlert('press-button', "PULSA E PARA ENTREGAR ORDEN")
                     deliverCustomerOrder(customer)
                 }
