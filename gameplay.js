@@ -414,6 +414,7 @@ function deliverCustomerOrder(customer) {
                     printInventory()
                 }
                 customer.orderDelivered = true
+                customer.boundingBox = null
                 despawnCustomer(customer);
             }
             else {
