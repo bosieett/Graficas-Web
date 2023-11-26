@@ -166,14 +166,18 @@ const ingredients = [
     {
         "name": "Arroz",
         "position": {"x": 7, "z": -30},
+        "boundingBox": ""
     },
     {
         "name": "Algas",
         "position": {"x": -8, "z": -30},
+        "boundingBox": ""
+
     },
     {
         "name": "Salmon",
         "position": {"x": 0, "z": -18},
+        "boundingBox": ""
     }
 ]
 
@@ -209,16 +213,24 @@ const dishes = [
     }
 ]
 
-const clientes = [
+const customers = [
     {
-        "id": 1,
-        "orden": dishes[2],
-        "pago": 80,
-        "tiempoEspera": 30,
-        "posicionX": 3,
-        "posicionZ": 5
+        "id": "client_1",
+        "order": dishes[2],
+        "pts": 80,
+        "waitingTime": 30000,
+        "position": {
+            "x": 3,
+            "z": 3
+        },
+        "mesh": "",
+        "boundingBox": "",
+        "orderTaken": false,
+        "spawned": false
     }
 ]
+
+const orders = []
 
 const basuraMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
 basuraMesh.position.x = -17;
@@ -236,18 +248,21 @@ const arrozMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
 arrozMesh.position.x = ingredients[0].position.x;
 arrozMesh.position.z = ingredients[0].position.z;
 let arrozBB = new THREE.Box3().setFromObject(arrozMesh);
+ingredients[0].boundingBox = arrozBB
 scene.add(arrozMesh);
 
 const algasMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
 algasMesh.position.x = ingredients[1].position.x;
 algasMesh.position.z = ingredients[1].position.z;
 let algasBB = new THREE.Box3().setFromObject(algasMesh);
+ingredients[1].boundingBox = algasBB
 scene.add(algasMesh);
 
 const salmonMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
 salmonMesh.position.x = ingredients[2].position.x;
 salmonMesh.position.z = ingredients[2].position.z;
 let salmonBB = new THREE.Box3().setFromObject(salmonMesh);
+ingredients[2].boundingBox = salmonBB
 scene.add(salmonMesh);
 
 //Skybox
@@ -365,27 +380,103 @@ controls.enableRotate=false;
 controls.maxPolarAngle=Math.PI/2-0.05;
 controls.update();
 
+//SPAWNEAR CLIENTES
+function spawnCustomer(customer) { 
+    const clientMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    clientMesh.position.x = customer.position.x;
+    clientMesh.position.z = customer.position.z;
+    let clientBB = new THREE.Box3().setFromObject(clientMesh);
+    scene.add(clientMesh);
+
+    customer.mesh = clientMesh
+    customer.boundingBox = clientBB
+
+    customer.spawned = true
+}
+
+function deliverCustomerOrder(customer) {
+    document.addEventListener('keyup', function keyPressed(e) {
+        if(e.key == 'e' || e.key == 'E') {
+
+            if (!statsPlayer.inventory.dishes[0]) {
+                showAlert('item-picked', "NO TIENES PLATILLOS EN EL INVENTARIO!")
+            }
+            else if(statsPlayer.inventory.dishes[0].name == customer.order.name) {
+                statsPlayer.pts += customer.pts
+                printStats()    
+                printOrders()    
+                if(statsPlayer.inventory.dishes.length > 0) {
+                    statsPlayer.inventory.dishes[0].ingredients = []
+                    statsPlayer.inventory.dishes.splice(0, 1)
+                    showAlert('item-picked', "ORDEN ENTREGADA!")
+                    transformDish()
+                    printInventory()
+                }
+                despawnCustomer(customer);
+            }
+            else {
+                showAlert('item-picked', "ORDEN EQUIVOCADA!")
+            }
+        }
+    })
+}
+
+//TOMAR ORDEN Y EMPEZAR LA CUENTA REGRESIVA DEL CLIENTE
+function takeCostumerOrder(customer) {
+    document.addEventListener('keypress', function keyPressed(e) {
+        if(e.key == 'e' || e.key == 'E') {
+            customer.orderTaken = true
+            printOrders()
+
+            //INICIA CONTADOR DE ESPERA DEL CLIENTE, PARA DESPUES DESPAWNEAR
+            setTimeout(() => {
+                despawnCustomer(customer);
+            }, customer.waitingTime);
+        }
+    })
+}
+
+//DESPAWNEAR CLIENTES
+function despawnCustomer(customer) {
+    scene.remove(customer.mesh);
+    customer.spawned = false
+}
+
 function checkCollisions(modelBB) {
+    //COLISION BASURA
     if(modelBB.intersectsBox(basuraBB)){
         showAlert('press-button', "PULSA Q PARA TIRAR EL PLATO")
         dropItem('dish', dishes[0])
     }
+    //COLISION PLATITOS
     if(modelBB.intersectsBox(platoBB)){
         showAlert('press-button', "PULSA E PARA RECOGER EL PLATO")
         pickItem('dish', dishes[0])
     }
-    else if(modelBB.intersectsBox(arrozBB)){
-        showAlert('press-button', "PULSA E PARA RECOGER EL ARROZ")
-        pickItem('ingredient', ingredients[0])
+    //COLISIONES INGREDIENTES
+    ingredients.forEach(ingredient => {
+        if(modelBB.intersectsBox(ingredient.boundingBox)){
+            showAlert('press-button', "PULSA E PARA RECOGER " + (ingredient.name).toUpperCase())
+            pickItem('ingredient', ingredient)
+        }
+    })
+    //COLISIONES DE CLIENTES SOLAMENTE SPAWNEADOS
+    if(customers.length > 0) {
+        customers.filter(customer => customer.spawned === true)
+        .forEach(customer => {       
+            if(modelBB.intersectsBox(customer.boundingBox)){
+                if(customer.orderTaken == false){
+                    showAlert('press-button', "PULSA E PARA TOMAR ORDEN")
+                    takeCostumerOrder(customer)
+                }
+                else {
+                    showAlert('press-button', "PULSA E PARA ENTREGAR ORDEN")
+                    deliverCustomerOrder(customer)
+                }
+            }
+        })
     }
-    else if(modelBB.intersectsBox(algasBB)){
-        showAlert('press-button', "PULSA E PARA RECOGER LAS ALGAS")
-        pickItem('ingredient', ingredients[1])
-    }
-    else if(modelBB.intersectsBox(salmonBB)){
-        showAlert('press-button', "PULSA E PARA RECOGER EL SALMON")
-        pickItem('ingredient', ingredients[2])
-    }
+
     mapColissions.forEach((element,iterador) => {
         if(iterador!=0)
         if(modelBB.intersectsBox(element)){
@@ -446,7 +537,7 @@ function dropItem(itemType, item) {
                 if(statsPlayer.inventory.dishes.length > 0) {
                     statsPlayer.inventory.dishes[0].ingredients = []
                     statsPlayer.inventory.dishes.splice(0, 1)
-                    showAlert('item-picked', "PLATILLO SOLTADO")
+                    showAlert('item-picked', "PLATILLO TIRADO A LA BASURA")
                     transformDish()
                     printInventory()
                     console.log(statsPlayer)
@@ -533,6 +624,16 @@ function printInventory() {
     }
 }
 
+printOrders()
+function printOrders() {
+    const contenedorOrdenes = document.getElementById('orders')
+    contenedorOrdenes.innerHTML = ''
+    customers.filter(customer => customer.orderTaken === true)
+    .forEach(customer => {  
+        contenedorOrdenes.insertAdjacentHTML('beforeend', `<li>${customer.order.name}</li>`)
+    })
+}
+
 printStats()
 function printStats() {
     const nombreJugador = document.getElementById('nombre-jugador')
@@ -571,10 +672,16 @@ function animate() {
 
             timerCounter--;
             printTimer()
-            if(timerCounter == 0) {
-                gameOver()
-            }
 
+            //Eventos del temporizador
+            switch (timerCounter) {
+                case 0:
+                    gameOver();
+                    break;
+                case 6600: 
+                    spawnCustomer(customers[0])
+                    break;
+            }
         }
 
     }
