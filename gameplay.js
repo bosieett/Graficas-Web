@@ -307,7 +307,7 @@ const customers = [
         "id": "client_1",
         "order": dishes[RandomDish1],
         "pts": RandomPts1,
-        "waitingTime": 20000,
+        "waitingTime": 30000,
         "position": {
             1: {"x": -2, "z": 3},
             2: {"x": 3, "z": 3},
@@ -323,7 +323,7 @@ const customers = [
         "id": "client_2",
         "order": dishes[RandomDish2],
         "pts": RandomPts2,
-        "waitingTime": 40000,
+        "waitingTime": 30000,
         "position": {
             1: {"x": -2, "z": 3},
             2: {"x": 3, "z": 12},
@@ -339,7 +339,7 @@ const customers = [
         "id": "client_3",
         "order": dishes[RandomDish3],
         "pts": RandomPts3,
-        "waitingTime": 40000,
+        "waitingTime": 30000,
         "position": {
             1: {"x": -2, "z": 3},
             2: {"x": 10, "z": 12},
@@ -355,7 +355,7 @@ const customers = [
         "id": "client_4",
         "order": dishes[RandomDish4],
         "pts": RandomPts4,
-        "waitingTime": 40000,
+        "waitingTime": 30000,
         "position": {
             1: {"x": -2, "z": 3},
             2: {"x": 3, "z": -4},
@@ -372,7 +372,7 @@ const customers = [
         "id": "client_5",
         "order": dishes[RandomDish5],
         "pts": RandomPts5,
-        "waitingTime": 40000,
+        "waitingTime": 30000,
         "position": {
             1: {"x": -2, "z": 3},
             2: {"x": -10, "z": 3},
@@ -388,7 +388,7 @@ const customers = [
         "id": "client_6",
         "order": dishes[RandomDish6],
         "pts": RandomPts6,
-        "waitingTime": 40000,
+        "waitingTime": 30000,
         "position": {
             1: {"x": -2, "z": 3},
             2: {"x": -10, "z": -5},
@@ -404,7 +404,7 @@ const customers = [
         "id": "client_7",
         "order": dishes[RandomDish7],
         "pts": RandomPts7,
-        "waitingTime": 40000,
+        "waitingTime": 30000,
         "position": {
             1: {"x": -2, "z": 3},
             2: {"x": 3, "z": 12},
@@ -746,6 +746,8 @@ function writeUserData(userId, positionX, positionZ) {
 }
 
 //Leer
+/*
+
 const starCountRef = ref(db, 'players');
 onValue(starCountRef, (snapshot) => {
     const data = snapshot.val();
@@ -754,7 +756,7 @@ onValue(starCountRef, (snapshot) => {
         // console.log(`${key} ${value.x} ${value.z}`);
         
         const player = scene.getObjectByName(key);
-
+        
         if(!player) {           
             new GLTFLoader().load('Panda.gltf', function(gltf){
                 const model = gltf.scene;
@@ -783,7 +785,30 @@ onValue(starCountRef, (snapshot) => {
             scene.getObjectByName(key).position.x = value.x;
             scene.getObjectByName(key).position.z = value.z;
         }
+        
     });
+});
+
+*/
+new GLTFLoader().load('Panda.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    model.position.set(5,0,0);
+    model.name = statsPlayer.uid;
+    // Animaciones
+    const gltfAnimations=gltf.animations;
+    const mixer=new THREE.AnimationMixer(model);
+    const animationMap=new Map();
+    gltfAnimations.filter(a=>a.name!=!'TPose').forEach((a)=>{
+        animationMap.set(a.name,mixer.clipAction(a))
+    })
+    charactercontrols = new CharacterControls(model, mixer, animationMap, controls, camera, 'Idle')
+    scene.add(model);
 });
 
 const clock = new THREE.Clock();
@@ -924,6 +949,7 @@ function deliverCustomerOrder(customer) {
                     if(statsPlayer.inventory.items.length > 0) {
                         if(statsPlayer.inventory.items[0].name = "Multiplicador de puntos") {
                             statsPlayer.pts += (customer.pts) * 1.15
+                            statsPlayer.pts = Math.floor(statsPlayer.pts)
                         }
                         else {
                             statsPlayer.pts += customer.pts
@@ -1001,6 +1027,8 @@ function takeCostumerOrder(customer) {
                 //INICIA CONTADOR DE ESPERA DEL CLIENTE, PARA DESPUES DESPAWNEAR
                 setTimeout(() => {
                     despawnCustomer(customer)
+                    statsPlayer.pts = statsPlayer.pts - 20;
+                    printStats();
                 }, customer.waitingTime);
             }
             else {
@@ -1242,7 +1270,7 @@ function printInventory() {
     
     ingredientsList.innerHTML = ''; 
     dishesList.innerHTML = ''; 
-    items.innerHTML = ''; 
+    itemsList.innerHTML = ''; 
 
     if(statsPlayer.inventory.dishes.length > 0) {
         statsPlayer.inventory.dishes.forEach((dish) => {
