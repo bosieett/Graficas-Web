@@ -530,7 +530,8 @@ function takeCostumerOrder(customer) {
 
     function keyPressed(e) {
         if(e.key == 'e' || e.key == 'E') {
-            if(!customer.orderTaken) {
+
+            if(!customer.orderTaken) {       
                 customer.orderTaken = true
                 printOrders()
                 takeorderSound.play()
@@ -578,12 +579,12 @@ function checkCollisions(modelBB) {
     if(customers.length > 0) {
         customers.filter(customer => customer.spawned === true)
         .forEach(customer => {       
-            if(modelBB.intersectsBox(customer.boundingBox)){
-                if(customer.orderTaken == false){
+            if(modelBB.intersectsBox(customer.boundingBox)) {
+                if(!customer.orderTaken && !customer.orderDelivered) {
                     showAlert('press-button', "PULSA E PARA TOMAR ORDEN")
                     takeCostumerOrder(customer)
                 }
-                if(customer.orderDelivered == false) {
+                if(customer.orderTaken && !customer.orderDelivered) {
                     showAlert('press-button', "PULSA E PARA ENTREGAR ORDEN")
                     deliverCustomerOrder(customer)
                 }
