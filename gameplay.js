@@ -642,7 +642,7 @@ new GLTFLoader().load(items[1].mesh, function(gltf){
     model.scale.set(6,6,6)
     multPuntosMesh=model;
     multPuntosMesh.position.x = items[1].position[indexMapa].x;
-    velocidadMesh.position.y = 3;
+    multPuntosMesh.position.y = 3;
     multPuntosMesh.position.z = items[1].position[indexMapa].z;
     let multPuntosBB = new THREE.Box3().setFromObject(multPuntosMesh);
     items[1].mesh = multPuntosMesh
@@ -661,7 +661,7 @@ new GLTFLoader().load(items[2].mesh, function(gltf){
     model.scale.set(6,6,6)
     sumTiempoMesh=model;
     sumTiempoMesh.position.x = items[2].position[indexMapa].x;
-    velocidadMesh.position.y = 1;
+    sumTiempoMesh.position.y = 1;
     sumTiempoMesh.position.z = items[2].position[indexMapa].z;
     let sumTiempoBB = new THREE.Box3().setFromObject(sumTiempoMesh);
     items[2].mesh = sumTiempoMesh
@@ -1713,6 +1713,11 @@ function animate() {
 
     }
     controls.update();
+
+
+    particles.rotation.x += 0.001;
+    particles.rotation.y += 0.001;
+
 
     renderer.render( scene, camera );
 
