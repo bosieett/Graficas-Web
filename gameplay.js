@@ -740,8 +740,7 @@ function deliverCustomerOrder(customer) {
                 }
                 else if(statsPlayer.inventory.dishes[0].name == customer.order.name) {
 
-                    console.log(statsPlayer)
-
+                    //Agregar puntos al usuario
                     if(statsPlayer.inventory.items.length > 0) {
                         if(statsPlayer.inventory.items[0].name = "Multiplicador de puntos") {
                             statsPlayer.pts += (customer.pts) * 1.15
@@ -753,6 +752,7 @@ function deliverCustomerOrder(customer) {
                     else {
                         statsPlayer.pts += customer.pts
                     }
+
                     printStats()
                     printOrders()    
                     if(statsPlayer.inventory.dishes.length > 0) {
@@ -766,6 +766,7 @@ function deliverCustomerOrder(customer) {
                     customer.orderDelivered = true
                     customer.boundingBox = null
                     despawnCustomer(customer);
+                    printOrders()
                 }
                 else {
                     showAlert('item-picked', "ORDEN EQUIVOCADA!")
