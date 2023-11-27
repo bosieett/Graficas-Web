@@ -10,13 +10,14 @@ import {
     GoogleAuthProvider, 
     signInWithPopup, 
     signOut,
-    FacebookAuthProvider 
+    FacebookAuthProvider
 } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 import { 
     getDatabase, 
     ref, 
     onValue,
-    set
+    set,
+    get
 } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
 // Your web app's Firebase configuration
@@ -35,6 +36,10 @@ const firebaseConfig = {
     appId: "1:82150438327:web:2750244f471b1c55bb6432"
   
   };
+
+document.getElementById('btnReiniciarJuego').addEventListener('click', function() {
+    location.reload();
+})
   
   
 //Initialize Firebase
@@ -51,6 +56,12 @@ const db = getDatabase();
 let currentUser;
 let timerCounter = 7200;
 
+const gameMode = getParameterByName('GameMode');
+var mapa = getParameterByName('Mapa');
+var dif = getParameterByName('Dificultad');
+let currentRoom = 0
+
+//Crear objeto usuario local
 const statsPlayer = {
     uid : localStorage.getItem('currentPlayer'),
     name : localStorage.getItem('currentPlayerName'),
@@ -64,7 +75,6 @@ const statsPlayer = {
         z : 0
     } 
 }
-
 
 async function login() {
     await signInWithPopup(auth, provider)
@@ -148,6 +158,76 @@ if(buttonLogin != null && buttonLogout != null && buttonLoginFB != null) {
     })
 }
 
+//GENERAR NUMERO DE SALA
+document.getElementById('button-createRoom').addEventListener('click', async function() {
+
+    let newRoomId = await generateRandomCodeRoom()
+
+    set(ref(db, 'room/' + newRoomId), {
+        creationDate: new Date(),
+        difficult: dif,
+        host_id: statsPlayer.uid,
+        host_name: statsPlayer.name,
+        room_code: newRoomId,
+        map: mapa,
+        status: "on waiting",
+        timer: 7200
+    });
+    set(ref(db, 'roomPlayers/' + newRoomId + '/' + statsPlayer.uid), {
+        pts: 0,
+        status: "conectado",
+        user_name: statsPlayer.name,
+        position: {
+            x: 5,
+            z: 0
+        }
+    });
+
+    currentRoom = newRoomId
+
+    let roomGeneration = window.confirm('Invita a tus amigos con la siguiente clave de sala: ' + newRoomId);
+
+    if (roomGeneration) {
+        spawnPlayerModel()
+        animate()
+    } 
+    else {
+        console.log('El usuario canceló.');
+    }
+})
+
+document.getElementById('button-joinRoom').addEventListener('click', function() {
+
+    let roomId = prompt('Introduce la clave de la sala')
+
+    if(roomId) {
+        set(ref(db, 'roomPlayers/' + roomId + '/' + statsPlayer.uid), {
+            pts: 0,
+            status: "conectado",
+            user_name: statsPlayer.name,
+            position: {
+                x: 5,
+                z: 0
+            }
+        });
+
+        currentRoom = roomId
+
+        spawnPlayerModel()
+        animate()
+
+        alert('Haz entrado a la sala con exito!')
+
+    }
+
+})
+
+function generateRandomCodeRoom() {
+    // Generar un número aleatorio entre 10000 y 99999
+    const code = Math.floor(Math.random() * 90000) + 10000;
+    return code;
+}
+
 /*
 const buttonLoginFB = document.querySelector('#button-loginFB');
 buttonLoginFB.addEventListener('click', e => {
@@ -168,10 +248,6 @@ function getParameterByName(name) {
     results = regex.exec(location.search);
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
-
-var mapa = getParameterByName('Mapa');
-
-var dif = getParameterByName('Dificultad');
 
 const indexMapa = mapa;
 
@@ -737,79 +813,129 @@ var charactercontrols;
 
 
 //Escribir
-function writeUserData(userId, positionX, positionZ) {
-    set(ref(db, 'players/' + userId), {
-        x: positionX,
-        z: positionZ
+function writeUserData(roomId, userId, positionX, positionZ) {
+    set(ref(db, 'roomPlayers' + '/' + roomId + '/' + userId), {
+        pts: 0,
+        status: "conectado",
+        user_name: statsPlayer.name,
+        position: {
+            x: positionX,
+            z: positionZ
+        }
     });
     //console.log(positionX,positionZ)
 }
 
-//Leer
-/*
 
-const starCountRef = ref(db, 'players');
-onValue(starCountRef, (snapshot) => {
-    const data = snapshot.val();
-    
-    Object.entries(data).forEach(([key, value]) => {
-        // console.log(`${key} ${value.x} ${value.z}`);
-        
-        const player = scene.getObjectByName(key);
-        
-        if(!player) {           
-            new GLTFLoader().load('Panda.gltf', function(gltf){
-                const model = gltf.scene;
-                model.traverse(object=>{
-                    if(object.isMesh) {
-                        if(object.name=="Knife")object.visible=false;
-                        object.castShadow=true;
-                    } 
+function getRemoteTimer() {
+    const roomRef = ref(db, 'room/' + currentRoom + '/timer');
+
+    return get(roomRef)
+        .then((snapshot) => {
+            const currentTimerValue = snapshot.val();
+            return currentTimerValue;
+        })
+        .catch((error) => {
+            console.error('Error al obtener el valor del temporizador:', error);
+            throw error; 
+        });
+}
+
+function updateRemoteTimer() {
+    const roomRef = ref(db, 'room/' + currentRoom + '/timer');
+
+    getRemoteTimer()
+        .then((currentTimerValue) => {
+            if (typeof currentTimerValue === 'number') {
+                const updatedTimerValue = currentTimerValue - 1;
+
+                return set(roomRef, updatedTimerValue);
+            } else {
+                console.error('El valor del temporizador no es un número.');
+                throw new Error('El valor del temporizador no es un número.');
+            }
+        })
+        .then(() => {
+            console.log('Temporizador actualizado correctamente en la base de datos.');
+        })
+        .catch((error) => {
+            console.error('Error al actualizar el temporizador en la base de datos:', error);
+        });
+}
+
+
+
+spawnPlayerModel()
+//Leer
+function spawnPlayerModel() {
+    if(gameMode == "Multiplayer") {
+        if(currentRoom != "") {
+            const starCountRef = ref(db, 'roomPlayers' + '/' + currentRoom);
+            onValue(starCountRef, (snapshot) => {
+                const data = snapshot.val();
+                
+                Object.entries(data).forEach(([key, value]) => {
+                    
+                    const player = scene.getObjectByName(key);
+                    
+                    if(!player) {           
+                        new GLTFLoader().load('Panda.gltf', function(gltf){
+                            const model = gltf.scene;
+                            model.traverse(object=>{
+                                if(object.isMesh) {
+                                    if(object.name=="Knife")object.visible=false;
+                                    object.castShadow=true;
+                                } 
+                            });
+                            model.position.set(value.position.x,0,value.position.z);
+                            model.name = key;
+                            // Animaciones
+                            const gltfAnimations=gltf.animations;
+                            const mixer=new THREE.AnimationMixer(model);
+                            const animationMap=new Map();
+                            gltfAnimations.filter(a=>a.name!=!'TPose').forEach((a)=>{
+                                animationMap.set(a.name,mixer.clipAction(a))
+                            })
+                            if(model.name ==  statsPlayer.uid) {
+                                charactercontrols = new CharacterControls(model, mixer, animationMap, controls, camera, 'Idle')
+                            }
+                            scene.add(model);
+                        });
+                    }
+                    else { 
+                        scene.getObjectByName(key).position.x = value.position.x;
+                        scene.getObjectByName(key).position.z = value.position.z;
+                    }
+                    
                 });
-                model.position.set(value.x,0,value.z);
-                model.name = key;
-                // Animaciones
-                const gltfAnimations=gltf.animations;
-                const mixer=new THREE.AnimationMixer(model);
-                const animationMap=new Map();
-                gltfAnimations.filter(a=>a.name!=!'TPose').forEach((a)=>{
-                    animationMap.set(a.name,mixer.clipAction(a))
-                })
-                if(model.name == currentPlayer) {
-                    charactercontrols = new CharacterControls(model, mixer, animationMap, controls, camera, 'Idle')
-                }
-                scene.add(model);
             });
         }
-        else { 
-            scene.getObjectByName(key).position.x = value.x;
-            scene.getObjectByName(key).position.z = value.z;
-        }
-        
-    });
-});
+    }
+    else {
+        new GLTFLoader().load('Panda.gltf', function(gltf){
+            const model = gltf.scene;
+            model.traverse(object=>{
+                if(object.isMesh) {
+                    if(object.name=="Knife")object.visible=false;
+                    object.castShadow=true;
+                } 
+            });
+            model.position.set(5,0,0);
+            model.name = statsPlayer.uid;
+            // Animaciones
+            const gltfAnimations=gltf.animations;
+            const mixer=new THREE.AnimationMixer(model);
+            const animationMap=new Map();
+            gltfAnimations.filter(a=>a.name!=!'TPose').forEach((a)=>{
+                animationMap.set(a.name,mixer.clipAction(a))
+            })
+            charactercontrols = new CharacterControls(model, mixer, animationMap, controls, camera, 'Idle')
+            scene.add(model);
+        });
+    }
+}
 
-*/
-new GLTFLoader().load('Panda.gltf', function(gltf){
-    const model = gltf.scene;
-    model.traverse(object=>{
-        if(object.isMesh) {
-            if(object.name=="Knife")object.visible=false;
-            object.castShadow=true;
-        } 
-    });
-    model.position.set(5,0,0);
-    model.name = statsPlayer.uid;
-    // Animaciones
-    const gltfAnimations=gltf.animations;
-    const mixer=new THREE.AnimationMixer(model);
-    const animationMap=new Map();
-    gltfAnimations.filter(a=>a.name!=!'TPose').forEach((a)=>{
-        animationMap.set(a.name,mixer.clipAction(a))
-    })
-    charactercontrols = new CharacterControls(model, mixer, animationMap, controls, camera, 'Idle')
-    scene.add(model);
-});
+
 
 const clock = new THREE.Clock();
 
@@ -1317,8 +1443,18 @@ function printStats() {
 }
 
 function printTimer() {
-    const timer = document.getElementById('timer')
-    timer.innerText = Math.ceil(timerCounter/60) + ' segundos restantes'
+    if(gameMode != "Multiplayer") {
+        const timer = document.getElementById('timer')
+        timer.innerText = Math.ceil(timerCounter/60) + ' segundos restantes'
+    }
+    else {
+        const timer = document.getElementById('timer')
+        getRemoteTimer().then(remoteTimer => {
+            timer.innerText = Math.ceil(remoteTimer/60) + ' segundos restantes' 
+        })
+
+    }
+        
 }
 
 //Subir nueva HighScore
@@ -1412,13 +1548,16 @@ function animate() {
 
             checkCollisions(modelBB);
 
-            writeUserData(statsPlayer.uid,charactercontrols.getPosX(),charactercontrols.getPosZ());
+            writeUserData(currentRoom, statsPlayer.uid, charactercontrols.getPosX(),charactercontrols.getPosZ());
 
-            if (!enPausa){
-                timerCounter--;
+            if (!enPausa && gameMode == "Multiplayer"){
+                updateRemoteTimer()
                 //timerCustomer.resume();
             }
-            if(enPausa){
+            else if(!enPausa && gameMode != "Multiplayer" ) {
+                timerCounter--;
+            }
+            else if(enPausa && gameMode != "Multiplayer"){
                 charactercontrols.setPrevPos();
                 //timerCustomer.pause();
             }
@@ -1438,54 +1577,110 @@ function animate() {
 
             //Eventos del temporizador
 
-            //Dificultad Normal
-            if(dif == 1){
-                switch (timerCounter) {
-                    case 0:
-                        gameOver();
-                        TablaPuntuaciones();
-                        break;
-                    case 7100: 
-                        spawnCustomer(customers[0])
-                        break;
-                    case 5400: 
-                        spawnCustomer(customers[1])
-                        break;
-                    case 3600: 
-                        spawnCustomer(customers[2])
-                        break;
-                    case 1800: 
-                        spawnCustomer(customers[3])
-                        break;
+            if(gameMode != "Multiplayer") {
+                //Dificultad Normal
+                if(dif == 1){
+                    switch (timerCounter) {
+                        case 0:
+                            gameOver();
+                            TablaPuntuaciones();
+                            break;
+                        case 7100: 
+                            spawnCustomer(customers[0])
+                            break;
+                        case 5400: 
+                            spawnCustomer(customers[1])
+                            break;
+                        case 3600: 
+                            spawnCustomer(customers[2])
+                            break;
+                        case 1800: 
+                            spawnCustomer(customers[3])
+                            break;
+                    }
+                }
+    
+                //Dificultad Dificil
+                if(dif == 2){
+                    switch (timerCounter) {
+                        case 0:
+                            gameOver();
+                            TablaPuntuaciones();
+                            break;
+                        case 7100: 
+                            spawnCustomer(customers[0])
+                            break;
+                        case 6000: 
+                            spawnCustomer(customers[1])
+                            break;
+                        case 4800: 
+                            spawnCustomer(customers[2])
+                            break;
+                        case 3600: 
+                            spawnCustomer(customers[3])
+                            break;
+                        case 2400: 
+                            spawnCustomer(customers[4])
+                            break;
+                        case 1200: 
+                            spawnCustomer(customers[5])
+                            break;
+                    }
                 }
             }
+            else {
+                getRemoteTimer().then(remoteTimerCounter => {
+                    //Dificultad Normal
+                    if(dif == 1){
+                        switch (remoteTimerCounter) {
+                            case 0:
+                                gameOver();
+                                TablaPuntuaciones();
+                                break;
+                            case 7100: 
+                                spawnCustomer(customers[0])
+                                break;
+                            case 5400: 
+                                spawnCustomer(customers[1])
+                                break;
+                            case 3600: 
+                                spawnCustomer(customers[2])
+                                break;
+                            case 1800: 
+                                spawnCustomer(customers[3])
+                                break;
+                        }
+                    }
+    
+                    //Dificultad Dificil
+                    if(dif == 2){
+                        switch (remoteTimerCounter) {
+                            case 0:
+                                gameOver();
+                                TablaPuntuaciones();
+                                break;
+                            case 7100: 
+                                spawnCustomer(customers[0])
+                                break;
+                            case 6000: 
+                                spawnCustomer(customers[1])
+                                break;
+                            case 4800: 
+                                spawnCustomer(customers[2])
+                                break;
+                            case 3600: 
+                                spawnCustomer(customers[3])
+                                break;
+                            case 2400: 
+                                spawnCustomer(customers[4])
+                                break;
+                            case 1200: 
+                                spawnCustomer(customers[5])
+                                break;
+                        }
+                    }
 
-            //Dificultad Dificil
-            if(dif == 2){
-                switch (timerCounter) {
-                    case 0:
-                        gameOver();
-                        TablaPuntuaciones();
-                        break;
-                    case 7100: 
-                        spawnCustomer(customers[0])
-                        break;
-                    case 6000: 
-                        spawnCustomer(customers[1])
-                        break;
-                    case 4800: 
-                        spawnCustomer(customers[2])
-                        break;
-                    case 3600: 
-                        spawnCustomer(customers[3])
-                        break;
-                    case 2400: 
-                        spawnCustomer(customers[4])
-                        break;
-                    case 1200: 
-                        spawnCustomer(customers[5])
-                        break;
-                }
+                }) 
             }
             
         }
@@ -1497,11 +1692,11 @@ function animate() {
 
 }
 
-if(localStorage.getItem("currentPlayer")) {
-    animate();
-}
-
 window.addEventListener( 'resize', onWindowResize, false );
+
+if(statsPlayer.uid != "") {
+    animate()
+}
 
 function onWindowResize(){
 
