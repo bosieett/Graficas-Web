@@ -49,7 +49,7 @@ const providerFB = new FacebookAuthProvider();
 const db = getDatabase();
 
 let currentUser;
-let timerCounter = 1800;
+let timerCounter = 7200;
 
 const statsPlayer = {
     uid : localStorage.getItem('currentPlayer'),
@@ -162,7 +162,18 @@ buttonLoginFB.addEventListener('click', e => {
 })
 */
 
-const indexMapa = 3;
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var mapa = getParameterByName('Mapa');
+
+var dif = getParameterByName('Dificultad');
+
+const indexMapa = mapa;
 
 //Esenciales
 const scene = new THREE.Scene();
@@ -269,18 +280,134 @@ const dishes = [
     }
 ]
 
-let RandomDish = Math.floor(Math.random() * 4) + 2;
-let RandomPts = Math.floor(Math.random() * 100) + 50;
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+let RandomDish1 = getRandomInt(2,4);
+let RandomDish2 = getRandomInt(2,4);
+let RandomDish3 = getRandomInt(2,4);
+let RandomDish4 = getRandomInt(2,4);
+let RandomDish5 = getRandomInt(2,4);
+let RandomDish6 = getRandomInt(2,4);
+let RandomDish7 = getRandomInt(2,4);
+
+let RandomPts1 = getRandomInt(50,100);
+let RandomPts2 = getRandomInt(50,100);
+let RandomPts3 = getRandomInt(50,100);
+let RandomPts4 = getRandomInt(50,100);
+let RandomPts5 = getRandomInt(50,100);
+let RandomPts6 = getRandomInt(50,100);
+let RandomPts7 = getRandomInt(50,100);
 
 const customers = [
     {
         "id": "client_1",
-        "order": dishes[RandomDish],
-        "pts": RandomPts,
-        "waitingTime": 30000,
+        "order": dishes[RandomDish1],
+        "pts": RandomPts1,
+        "waitingTime": 20000,
         "position": {
             1: {"x": -2, "z": 3},
             2: {"x": 3, "z": 3},
+            3: {"x": -6, "z": -6},
+        },
+        "mesh": "",
+        "boundingBox": "",
+        "orderTaken": false,
+        "orderDelivered": false,
+        "spawned": false
+    },
+    {
+        "id": "client_2",
+        "order": dishes[RandomDish2],
+        "pts": RandomPts2,
+        "waitingTime": 40000,
+        "position": {
+            1: {"x": -2, "z": 3},
+            2: {"x": 3, "z": 12},
+            3: {"x": -6, "z": -6},
+        },
+        "mesh": "",
+        "boundingBox": "",
+        "orderTaken": false,
+        "orderDelivered": false,
+        "spawned": false
+    },
+    {
+        "id": "client_3",
+        "order": dishes[RandomDish3],
+        "pts": RandomPts3,
+        "waitingTime": 40000,
+        "position": {
+            1: {"x": -2, "z": 3},
+            2: {"x": 10, "z": 12},
+            3: {"x": -6, "z": -6},
+        },
+        "mesh": "",
+        "boundingBox": "",
+        "orderTaken": false,
+        "orderDelivered": false,
+        "spawned": false
+    },
+    {
+        "id": "client_4",
+        "order": dishes[RandomDish4],
+        "pts": RandomPts4,
+        "waitingTime": 40000,
+        "position": {
+            1: {"x": -2, "z": 3},
+            2: {"x": 3, "z": -4},
+            3: {"x": -6, "z": -6},
+        },
+        "mesh": "",
+        "boundingBox": "",
+        "orderTaken": false,
+        "orderDelivered": false,
+        "spawned": false
+    }
+    ,
+    {
+        "id": "client_5",
+        "order": dishes[RandomDish5],
+        "pts": RandomPts5,
+        "waitingTime": 40000,
+        "position": {
+            1: {"x": -2, "z": 3},
+            2: {"x": -10, "z": 3},
+            3: {"x": -6, "z": -6},
+        },
+        "mesh": "",
+        "boundingBox": "",
+        "orderTaken": false,
+        "orderDelivered": false,
+        "spawned": false
+    },
+    {
+        "id": "client_6",
+        "order": dishes[RandomDish6],
+        "pts": RandomPts6,
+        "waitingTime": 40000,
+        "position": {
+            1: {"x": -2, "z": 3},
+            2: {"x": -10, "z": -5},
+            3: {"x": -6, "z": -6},
+        },
+        "mesh": "",
+        "boundingBox": "",
+        "orderTaken": false,
+        "orderDelivered": false,
+        "spawned": false
+    },
+    {
+        "id": "client_7",
+        "order": dishes[RandomDish7],
+        "pts": RandomPts7,
+        "waitingTime": 40000,
+        "position": {
+            1: {"x": -2, "z": 3},
+            2: {"x": 3, "z": 12},
             3: {"x": -6, "z": -6},
         },
         "mesh": "",
@@ -520,7 +647,7 @@ function writeUserData(userId, positionX, positionZ) {
         x: positionX,
         z: positionZ
     });
-    console.log(positionX,positionZ)
+    //console.log(positionX,positionZ)
 }
 
 //Leer
@@ -619,19 +746,71 @@ new GLTFLoader().load('Rabbit_Blond.gltf', function(gltf){
     });
     arrCustModels.push(model);
 })
+new GLTFLoader().load('Rabbit_Purple.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+new GLTFLoader().load('Rabbit_Grey.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+new GLTFLoader().load('Rabbit_Cyan.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
 
 //SPAWNEAR CLIENTES
+let ArrayModelosSpawneados = [
+    {NumModelo : 10 }
+];
 function spawnCustomer(customer) {
-    const random = Math.floor(Math.random() * arrCustModels.length);
+    var random = 0;
+    var salirAFuerza = 0;
+    do {
+        var repetir = 0;
+        random = Math.floor(Math.random() * arrCustModels.length);
+        console.log(random);
+        ArrayModelosSpawneados.forEach(model => {
+            if (random == model.NumModelo){
+                repetir = 1;
+            }
+        })
+        salirAFuerza = salirAFuerza + 1;
+        console.log(salirAFuerza);
+    }while(repetir == 1 || salirAFuerza > 6);
+    
+    ArrayModelosSpawneados.push(
+        { NumModelo: random }
+    );
+
     const clientMesh = arrCustModels[random];
+
     clientMesh.position.x = customer.position[indexMapa].x;
     clientMesh.position.z = customer.position[indexMapa].z;
     let clientBB = new THREE.Box3().setFromObject(clientMesh);
-    scene.add(clientMesh);
 
     customer.mesh = clientMesh
     customer.boundingBox = clientBB
 
+    scene.add(customer.mesh);
     customer.spawned = true
 }
 
@@ -642,11 +821,10 @@ function deliverCustomerOrder(customer) {
             if(!customer.orderDelivered) {
                 if (!statsPlayer.inventory.dishes[0]) {
                     showAlert('item-picked', "NO TIENES PLATILLOS EN EL INVENTARIO!")
+                    printOrders()
                 }
-                else if(statsPlayer.inventory.dishes[0].name == customer.order.name) {
+                else if(statsPlayer.inventory.dishes[0].name == customer.order.name && customer.spawned == true) {
                     statsPlayer.pts += customer.pts
-                    printStats()
-                    printOrders()    
                     if(statsPlayer.inventory.dishes.length > 0) {
                         statsPlayer.inventory.dishes[0].ingredients = []
                         statsPlayer.inventory.dishes.splice(0, 1)
@@ -657,14 +835,20 @@ function deliverCustomerOrder(customer) {
                     }
                     customer.orderDelivered = true
                     customer.boundingBox = null
-                    despawnCustomer(customer);
+                    customer.orderTaken = false
+                    despawnCustomer(customer)
+                    printStats()
+                    printOrders()
+                    
                 }
                 else {
                     showAlert('item-picked', "ORDEN EQUIVOCADA!")
+                    printOrders()
                 }
             }
             else {
                 document.removeEventListener('keyup', keyPressed);
+                printOrders()
             }
         }
     }
@@ -700,22 +884,21 @@ function takeCostumerOrder(customer) {
         if(e.key == 'e' || e.key == 'E') {
 
             if(!customer.orderTaken) {       
-                customer.orderTaken = true
-                printOrders()
-                takeorderSound.play()
-                showAlert('item-picked', "ORDEN TOMADA: " + (customer.order.name).toUpperCase())
-
+                customer.orderTaken = true;
+                takeorderSound.play();
+                showAlert('item-picked', "ORDEN TOMADA: " + (customer.order.name).toUpperCase());
+                printOrders();
                 //INICIA CONTADOR DE ESPERA DEL CLIENTE, PARA DESPUES DESPAWNEAR
                 setTimeout(() => {
-                    despawnCustomer(customer);
+                    despawnCustomer(customer)
                 }, customer.waitingTime);
             }
             else {
                 document.removeEventListener('keyup', keyPressed);
+                printOrders()
             }
         }
     }
-
     document.addEventListener('keypress', keyPressed)
 }
 
@@ -723,6 +906,7 @@ function takeCostumerOrder(customer) {
 function despawnCustomer(customer) {
     scene.remove(customer.mesh);
     customer.spawned = false
+    printOrders();
 }
 
 function checkCollisions(modelBB) {
@@ -748,11 +932,11 @@ function checkCollisions(modelBB) {
         customers.filter(customer => customer.spawned === true)
         .forEach(customer => {       
             if(modelBB.intersectsBox(customer.boundingBox)) {
-                if(!customer.orderTaken && !customer.orderDelivered) {
+                if(!customer.orderTaken && !customer.orderDelivered && customer.spawned == true) {
                     showAlert('press-button', "PULSA E PARA TOMAR ORDEN")
                     takeCostumerOrder(customer)
                 }
-                if(customer.orderTaken && !customer.orderDelivered) {
+                else if(customer.orderTaken && !customer.orderDelivered && customer.spawned == true) {
                     showAlert('press-button', "PULSA E PARA ENTREGAR ORDEN")
                     deliverCustomerOrder(customer)
                 }
@@ -933,7 +1117,7 @@ printOrders()
 function printOrders() {
     const contenedorOrdenes = document.getElementById('orders')
     contenedorOrdenes.innerHTML = ''
-    customers.filter(customer => customer.orderTaken && !customer.orderDelivered)
+    customers.filter(customer => customer.orderTaken && !customer.orderDelivered && customer.spawned == true)
     .forEach(customer => {  
         contenedorOrdenes.insertAdjacentHTML('beforeend', `<li>${customer.order.name}</li>`)
     })
@@ -1057,15 +1241,57 @@ function animate() {
             printTimer()
 
             //Eventos del temporizador
-            switch (timerCounter) {
-                case 0:
-                    gameOver();
-                    TablaPuntuaciones();
-                    break;
-                case 1500: 
-                    spawnCustomer(customers[0])
-                    break;
+
+            //Dificultad Normal
+            if(dif == 1){
+                switch (timerCounter) {
+                    case 0:
+                        gameOver();
+                        TablaPuntuaciones();
+                        break;
+                    case 7100: 
+                        spawnCustomer(customers[0])
+                        break;
+                    case 5400: 
+                        spawnCustomer(customers[1])
+                        break;
+                    case 3600: 
+                        spawnCustomer(customers[2])
+                        break;
+                    case 1800: 
+                        spawnCustomer(customers[3])
+                        break;
+                }
             }
+
+            //Dificultad Dificil
+            if(dif == 2){
+                switch (timerCounter) {
+                    case 0:
+                        gameOver();
+                        TablaPuntuaciones();
+                        break;
+                    case 7100: 
+                        spawnCustomer(customers[0])
+                        break;
+                    case 6000: 
+                        spawnCustomer(customers[1])
+                        break;
+                    case 4800: 
+                        spawnCustomer(customers[2])
+                        break;
+                    case 3600: 
+                        spawnCustomer(customers[3])
+                        break;
+                    case 2400: 
+                        spawnCustomer(customers[4])
+                        break;
+                    case 1200: 
+                        spawnCustomer(customers[5])
+                        break;
+                }
+            }
+            
         }
 
     }
