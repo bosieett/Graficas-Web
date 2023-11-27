@@ -49,7 +49,7 @@ const providerFB = new FacebookAuthProvider();
 const db = getDatabase();
 
 let currentUser;
-let timerCounter = 7200;
+let timerCounter = 1800;
 
 const statsPlayer = {
     uid : localStorage.getItem('currentPlayer'),
@@ -161,6 +161,9 @@ buttonLoginFB.addEventListener('click', e => {
         });
 })
 */
+
+const indexMapa = 3;
+
 //Esenciales
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -175,8 +178,17 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.getElementById('gameplay-container').appendChild( renderer.domElement );
 
-const cubeGeometry = new THREE.BoxGeometry(3, 3, 3);
+const cubeGeometry = new THREE.BoxGeometry(70, 3, 2);
+const cubeGeometry2 = new THREE.BoxGeometry(2, 3, 70);
 const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff1000 });
+const downCollision = new THREE.Mesh(cubeGeometry, cubeMaterial)
+downCollision.position.z=19
+const upCollision = new THREE.Mesh(cubeGeometry, cubeMaterial)
+upCollision.position.z=-37
+const leftCollision = new THREE.Mesh(cubeGeometry2, cubeMaterial)
+leftCollision.position.x=-31
+const rightCollision = new THREE.Mesh(cubeGeometry2, cubeMaterial)
+rightCollision.position.x=31
 
 const plates = {
     "position": {
@@ -278,42 +290,90 @@ const customers = [
 
 const orders = []
 
-//Mapa a elegir
-const indexMapa = 3
-
-
-const basuraMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+let basuraMesh
+let basuraBB
+new GLTFLoader().load('Models/Environment/glTF/Environment_Pot_2_Empty.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(2,2,2)
+    basuraMesh=model;
 basuraMesh.position.x = trash.position[indexMapa].x;
 basuraMesh.position.z = trash.position[indexMapa].z;
-let basuraBB = new THREE.Box3().setFromObject(basuraMesh);
-scene.add(basuraMesh);
+ basuraBB = new THREE.Box3().setFromObject(basuraMesh);
+scene.add(basuraMesh);})
 
-const platoMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+let platoMesh;
+let platoBB
+new GLTFLoader().load('Models/Environment/glTF/Environment_Bowl.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(5,5,5)
+    platoMesh=model;
 platoMesh.position.x = plates.position[indexMapa].x;
-platoMesh.position.z = plates.position[indexMapa].z
-let platoBB = new THREE.Box3().setFromObject(platoMesh);
+platoMesh.position.z = plates.position[indexMapa].z;
+platoBB = new THREE.Box3().setFromObject(platoMesh);
 scene.add(platoMesh);
+})
 
-const arrozMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+let arrozMesh
+new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Rice.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(5,5,5)
+    arrozMesh=model;
 arrozMesh.position.x = ingredients[0].position[indexMapa].x;
 arrozMesh.position.z = ingredients[0].position[indexMapa].z;
 let arrozBB = new THREE.Box3().setFromObject(arrozMesh);
 ingredients[0].boundingBox = arrozBB
-scene.add(arrozMesh);
+scene.add(arrozMesh);})
 
-const algasMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+let algasMesh
+new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Nori.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.position.y=0.3;
+    model.scale.set(5,5,5)
+    algasMesh=model;
 algasMesh.position.x = ingredients[1].position[indexMapa].x;
 algasMesh.position.z = ingredients[1].position[indexMapa].z;
 let algasBB = new THREE.Box3().setFromObject(algasMesh);
-ingredients[1].boundingBox = algasBB
+ingredients[1].boundingBox = algasBB;
 scene.add(algasMesh);
+})
 
-const salmonMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-salmonMesh.position.x = ingredients[2].position[indexMapa].x;
-salmonMesh.position.z = ingredients[2].position[indexMapa].z;
-let salmonBB = new THREE.Box3().setFromObject(salmonMesh);
-ingredients[2].boundingBox = salmonBB
-scene.add(salmonMesh);
+
+let salmonMesh
+new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(5,5,5)
+    salmonMesh=model;
+    salmonMesh.position.x = ingredients[2].position[indexMapa].x;
+    salmonMesh.position.z = ingredients[2].position[indexMapa].z;
+    let salmonBB = new THREE.Box3().setFromObject(salmonMesh);
+    ingredients[2].boundingBox = salmonBB
+    scene.add(salmonMesh);
+})
 
 //Skybox
 new THREE.TextureLoader().load("skibox.jpg",(texture)=>{
@@ -336,14 +396,14 @@ scene.add( plane );
 var mapColissions=[]
 
 //Qué mapa elegir
-function chooseMap(numero){
+function chooseMap(indexMapa){
     const nivel={
     1:'Mapas/GCWFirstMap.glb',
     2: 'Mapas/GCWSecondMap.glb',
     3: 'Mapas/GCWThirdMap.glb'
 }
     const nivelDefault='Mapas/GCWFirstMap.glb';
-    let nivelJugar=nivel[numero]||nivelDefault;
+    let nivelJugar=nivel[indexMapa]||nivelDefault;
     return nivelJugar
 }
 
@@ -363,6 +423,11 @@ function chooseMap(numero){
     */
       mapColissions.push(cube2BB);
     })
+    
+ mapColissions.push(new THREE.Box3().setFromObject(downCollision))
+ mapColissions.push(new THREE.Box3().setFromObject(upCollision))
+ mapColissions.push(new THREE.Box3().setFromObject(leftCollision))
+ mapColissions.push(new THREE.Box3().setFromObject(rightCollision))
     scene.add(gltf.scene);
  });
 
@@ -474,9 +539,53 @@ controls.enableRotate=false;
 controls.maxPolarAngle=Math.PI/2-0.05;
 controls.update();
 
+//MODELO DE CLIENTE
+var arrCustModels=[];
+new GLTFLoader().load('Rabbit_Purple.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+new GLTFLoader().load('Rabbit_Grey.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+new GLTFLoader().load('Rabbit_Cyan.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+new GLTFLoader().load('Rabbit_Blond.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            if(object.name=="Knife"||object.name=="Pan")object.visible=false;
+            object.castShadow=true;
+        } 
+    });
+    arrCustModels.push(model);
+})
+
 //SPAWNEAR CLIENTES
-function spawnCustomer(customer) { 
-    const clientMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+function spawnCustomer(customer) {
+    const random = Math.floor(Math.random() * arrCustModels.length);
+    const clientMesh = arrCustModels[random];
     clientMesh.position.x = customer.position[indexMapa].x;
     clientMesh.position.z = customer.position[indexMapa].z;
     let clientBB = new THREE.Box3().setFromObject(clientMesh);
@@ -498,10 +607,7 @@ function deliverCustomerOrder(customer) {
                 }
                 else if(statsPlayer.inventory.dishes[0].name == customer.order.name) {
                     statsPlayer.pts += customer.pts
-                    printStats()    
-                    customer.orderDelivered = true
-                    customer.boundingBox = null
-                    despawnCustomer(customer);
+                    printStats()
                     printOrders()    
                     if(statsPlayer.inventory.dishes.length > 0) {
                         statsPlayer.inventory.dishes[0].ingredients = []
@@ -511,6 +617,9 @@ function deliverCustomerOrder(customer) {
                         printInventory()
                         happySound.play()
                     }
+                    customer.orderDelivered = true
+                    customer.boundingBox = null
+                    despawnCustomer(customer);
                 }
                 else {
                     showAlert('item-picked', "ORDEN EQUIVOCADA!")
@@ -767,9 +876,10 @@ function printTimer() {
 }
 
 //Subir nueva HighScore
-function writePuntuacionData(userId, Pts) {
+function writePuntuacionData(userId, Pts, Nombre) {
     set(ref(db, 'puntuacion/' + userId), {
-        Puntos: Pts
+        Puntos: Pts,
+        Name: Nombre
     });
 }
 
@@ -786,7 +896,6 @@ function gameOver() {
         let siExiste = 0;
         
         Object.entries(data).forEach(([key, value]) => {
-        console.log(`${key} ${value.Puntos}`);
             
         if(statsPlayer.uid == key){
             console.log("Si Existes, puntuacion guardad es: " + `${value.Puntos}`);
@@ -794,7 +903,7 @@ function gameOver() {
             if(statsPlayer.pts > value.Puntos){
                 const HighScore = document.getElementById('HighScore');
                 HighScore.innerText = "¡Nueva Puntuacion Mas Alta!";
-                writePuntuacionData(statsPlayer.uid, statsPlayer.pts);
+                writePuntuacionData(statsPlayer.uid, statsPlayer.pts, statsPlayer.name);
                 console.log("Ya existias, Nueva Puntuacion Mas Alta: " + statsPlayer.pts);
             }
         }
@@ -804,10 +913,41 @@ function gameOver() {
             const HighScore = document.getElementById('HighScore');
             HighScore.innerText = "¡Nueva Puntuacion Mas Alta!";
             console.log("No tenias puntuacion, ahi te va una nueva");
-            writePuntuacionData(statsPlayer.uid, statsPlayer.pts);
+            writePuntuacionData(statsPlayer.uid, statsPlayer.pts, statsPlayer.name);
         }
     });
+}
 
+let ArrayPts = [];
+
+function TablaPuntuaciones() {
+
+    const PtsCountRef = ref(db, 'puntuacion');
+    onValue(PtsCountRef, (snapshot) => {
+        ArrayPts = [];
+        const data = snapshot.val();
+        
+        //console.log("Tabla Puntuaciones");
+        Object.entries(data).forEach(([key, value]) => {
+
+        ArrayPts.push(
+            { Nombre: `${value.Name}`,
+            Score: value.Puntos}
+        );
+        });
+
+        ArrayPts.sort((a, b) => {
+            return b.Score - a.Score;
+        });
+        console.log(ArrayPts);
+    
+        const ListaPuntuaciones = document.getElementById('Lista-Puntuaciones')
+        ListaPuntuaciones.innerHTML = '';
+    
+        for (var Player of ArrayPts) {
+            ListaPuntuaciones.insertAdjacentHTML('beforeend', `<li>${Player.Nombre}: ${Player.Score}</li>`);
+        }
+    });
 }
 
 function animate() {
@@ -833,8 +973,9 @@ function animate() {
             switch (timerCounter) {
                 case 0:
                     gameOver();
+                    TablaPuntuaciones();
                     break;
-                case 6600: 
+                case 1500: 
                     spawnCustomer(customers[0])
                     break;
             }
