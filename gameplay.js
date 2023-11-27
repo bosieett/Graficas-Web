@@ -377,9 +377,9 @@ const customers = [
         "pts": RandomPts1,
         "waitingTime": 30000,
         "position": {
-            1: {"x": -2, "z": 3},
+            1: {"x": -2, "z": 2.5},
             2: {"x": 3, "z": 3},
-            3: {"x": -6, "z": -6},
+            3: {"x": -6.5, "z": -5},
         },
         "mesh": "",
         "boundingBox": "",
@@ -393,9 +393,9 @@ const customers = [
         "pts": RandomPts2,
         "waitingTime": 30000,
         "position": {
-            1: {"x": -2, "z": 3},
+            1: {"x": -15, "z": -14},
             2: {"x": 3, "z": 12},
-            3: {"x": -6, "z": -6},
+            3: {"x": -19, "z": -4.8},
         },
         "mesh": "",
         "boundingBox": "",
@@ -409,9 +409,9 @@ const customers = [
         "pts": RandomPts3,
         "waitingTime": 30000,
         "position": {
-            1: {"x": -2, "z": 3},
+            1: {"x": -5, "z": 2.5},
             2: {"x": 10, "z": 12},
-            3: {"x": -6, "z": -6},
+            3: {"x": -6, "z": 10},
         },
         "mesh": "",
         "boundingBox": "",
@@ -425,9 +425,9 @@ const customers = [
         "pts": RandomPts4,
         "waitingTime": 30000,
         "position": {
-            1: {"x": -2, "z": 3},
+            1: {"x": 9, "z": 2.5},
             2: {"x": 3, "z": -4},
-            3: {"x": -6, "z": -6},
+            3: {"x": -19, "z": 10},
         },
         "mesh": "",
         "boundingBox": "",
@@ -442,9 +442,9 @@ const customers = [
         "pts": RandomPts5,
         "waitingTime": 30000,
         "position": {
-            1: {"x": -2, "z": 3},
+            1: {"x": 14, "z": -10},
             2: {"x": -10, "z": 3},
-            3: {"x": -6, "z": -6},
+            3: {"x": -2.5, "z": -14.5},
         },
         "mesh": "",
         "boundingBox": "",
@@ -458,9 +458,9 @@ const customers = [
         "pts": RandomPts6,
         "waitingTime": 30000,
         "position": {
-            1: {"x": -2, "z": 3},
+            1: {"x": 14, "z": -4},
             2: {"x": -10, "z": -5},
-            3: {"x": -6, "z": -6},
+            3: {"x": -0.5, "z": -4.7},
         },
         "mesh": "",
         "boundingBox": "",
@@ -474,7 +474,7 @@ const customers = [
         "pts": RandomPts7,
         "waitingTime": 30000,
         "position": {
-            1: {"x": -2, "z": 3},
+            1: {"x": 13.5, "z": -10},
             2: {"x": 3, "z": 12},
             3: {"x": -6, "z": -6},
         },
@@ -837,6 +837,14 @@ textureLoader.load('imagenes/estrella.png', function(imagen){
 
 var charactercontrols;
 
+//Escribir
+function writeUserDataSingle(userId, positionX, positionZ) {
+    set(ref(db, 'players/' + userId), {
+        x: positionX,
+        z: positionZ
+    });
+    //console.log(positionX,positionZ)
+}
 
 //Escribir
 function writeUserData(roomId, userId, positionX, positionZ) {
@@ -1574,7 +1582,12 @@ function animate() {
 
             checkCollisions(modelBB);
 
-            writeUserData(currentRoom, statsPlayer.uid, charactercontrols.getPosX(),charactercontrols.getPosZ());
+            if(gameMode == "Single"){
+                writeUserDataSingle(statsPlayer.uid, charactercontrols.getPosX(),charactercontrols.getPosZ());
+            }
+            else{
+                writeUserData(currentRoom, statsPlayer.uid, charactercontrols.getPosX(),charactercontrols.getPosZ());
+            }
 
             if (!enPausa && gameMode == "Multiplayer"){
                 updateRemoteTimer()
@@ -1611,7 +1624,7 @@ function animate() {
                             gameOver();
                             TablaPuntuaciones();
                             break;
-                        case 7100: 
+                        case 7000: 
                             spawnCustomer(customers[0])
                             break;
                         case 5400: 
@@ -1633,7 +1646,7 @@ function animate() {
                             gameOver();
                             TablaPuntuaciones();
                             break;
-                        case 7100: 
+                        case 7000: 
                             spawnCustomer(customers[0])
                             break;
                         case 6000: 
