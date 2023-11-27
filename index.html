@@ -24,10 +24,20 @@
         </div>
         <div class="contenedor-botones">
             <a class="button-ui" href="gameplay.html">JUGAR</a>
-            <a class="button-ui" href="#">AJUSTES</a>
+            <a class="button-ui" href="config.html">AJUSTES</a>
             <a class="button-ui" href="#">SALIR</a>
         </div>
     </main>
-		<script type="module" src="./gameplay.js"></script>
+		<script>
+    function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var varURL = getParameterByName('VolMus');
+console.log(varURL);
+    </script>
 </body>
 </html>

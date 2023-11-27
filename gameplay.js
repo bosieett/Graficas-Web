@@ -269,11 +269,14 @@ const dishes = [
     }
 ]
 
+let RandomDish = Math.floor(Math.random() * 4) + 2;
+let RandomPts = Math.floor(Math.random() * 100) + 50;
+
 const customers = [
     {
         "id": "client_1",
-        "order": dishes[2],
-        "pts": 80,
+        "order": dishes[RandomDish],
+        "pts": RandomPts,
         "waitingTime": 30000,
         "position": {
             1: {"x": -2, "z": 3},
@@ -526,6 +529,41 @@ function chooseMap(indexMapa){
     scene.add(gltf.scene);
  });
 
+ var VolMus = 0.5;
+ var VolVFX= 0.5;
+
+ var sliderMusica = document.querySelector(".inputMusica");
+    sliderMusica.oninput = function(){
+     var progressBarMusica = document.querySelector(".progressMusica");
+     progressBarMusica.value = sliderMusica.value;
+     var sliderValueMusica = document.querySelector(".sliderValueMusica");
+     sliderValueMusica.innerHTML = sliderMusica.value;
+     VolMus = sliderMusica.value / 100;
+    }
+
+var slider = document.querySelector(".inputVFX");
+	    slider.oninput = function(){
+		var progressBar = document.querySelector(".progressVFX");
+		progressBar.value = slider.value;
+		var sliderValue = document.querySelector(".sliderValueVFX");
+		sliderValue.innerHTML = slider.value;
+        VolVFX = slider.value / 100;
+	}
+
+
+
+const btnGuardarConfig = document.querySelector("#btnGuardarConfig");
+btnGuardarConfig.addEventListener('click', e => {
+    e.preventDefault();
+    backgroundMusic.setVolume(VolMus);
+    trashSound.setVolume(VolVFX);
+    dishSound.setVolume(VolVFX);
+    happySound.setVolume(VolVFX);
+    happySound.setVolume(VolVFX);
+    console.log(VolMus);
+    console.log(VolVFX);
+})
+
 //Sonido
 const listener = new THREE.AudioListener();
 const backgroundMusic= new THREE.Audio(listener);
@@ -538,33 +576,33 @@ const audioLoader= new THREE.AudioLoader();
 audioLoader.load("Audio/Zazie.mp3", function(buffer){
     backgroundMusic.setBuffer(buffer);
     backgroundMusic.setLoop(true);
-    backgroundMusic.setVolume(0.5);
+    backgroundMusic.setVolume(VolMus);
     backgroundMusic.play();
 })
 audioLoader.load("Audio/basura.wav", function(buffer){
     trashSound.setBuffer(buffer);
     trashSound.setLoop(false);
-    trashSound.setVolume(1.0);
+    trashSound.setVolume(VolVFX);
 })
 audioLoader.load("Audio/recoger.wav", function(buffer){
     pickupSound.setBuffer(buffer);
     pickupSound.setLoop(false);
-    pickupSound.setVolume(1.0);
+    pickupSound.setVolume(VolVFX);
 })
 audioLoader.load("Audio/plato.wav", function(buffer){
     dishSound.setBuffer(buffer);
     dishSound.setLoop(false);
-    dishSound.setVolume(1.0);
+    dishSound.setVolume(VolVFX);
 })
 audioLoader.load("Audio/clientefeliz.wav", function(buffer){
     happySound.setBuffer(buffer);
     happySound.setLoop(false);
-    happySound.setVolume(1.0);
+    happySound.setVolume(VolVFX);
 })
 audioLoader.load("Audio/tomarorden.wav", function(buffer){
     takeorderSound.setBuffer(buffer);
     takeorderSound.setLoop(false);
-    takeorderSound.setVolume(1.0);
+    happySound.setVolume(VolVFX);
 })
 camera.add(listener)
 
@@ -741,6 +779,27 @@ function deliverCustomerOrder(customer) {
 
     document.addEventListener('keyup', keyPressed)
 }
+
+var Timer = function(callback, delay) {
+    var timerId, start, remaining = delay;
+
+    this.pause = function() {
+        window.clearTimeout(timerId);
+        timerId = null;
+        remaining -= Date.now() - start;
+    };
+
+    this.resume = function() {
+        if (timerId) {
+            return;
+        }
+
+        start = Date.now();
+        timerId = window.setTimeout(callback, remaining);
+    };
+
+    this.resume();
+};
 
 //TOMAR ORDEN Y EMPEZAR LA CUENTA REGRESIVA DEL CLIENTE
 function takeCostumerOrder(customer) {
@@ -946,6 +1005,24 @@ function setsEqual(set1, set2) {
     return true;
 }
 
+//PAUSAR EL TIMER
+document.addEventListener('keydown', function(e) {
+    if(e.key == 'p' || e.key == 'P') {
+        if(enPausa == false) {
+            enPausa = true;
+            const htmlPausa = document.getElementById('contenedor-pausa')
+            htmlPausa.style.display = 'block'
+            console.log('Pausado');
+        }
+        else if(enPausa == true) {
+            enPausa = false;
+            const htmlPausa = document.getElementById('contenedor-pausa')
+            htmlPausa.style.display = 'none'
+            console.log('Despausado');
+        }
+    }
+})
+
 function showAlert(alertType, message) {
 
     let gameplayAlert, duration
@@ -1105,6 +1182,8 @@ function TablaPuntuaciones() {
     });
 }
 
+let enPausa = false;
+
 function animate() {
     
     requestAnimationFrame(animate);
@@ -1121,7 +1200,15 @@ function animate() {
 
             writeUserData(statsPlayer.uid,charactercontrols.getPosX(),charactercontrols.getPosZ());
 
-            timerCounter--;
+            if (!enPausa){
+                timerCounter--;
+                //timerCustomer.resume();
+            }
+            if(enPausa){
+                charactercontrols.setPrevPos();
+                //timerCustomer.pause();
+            }
+            
             printTimer()
 
             //Evento items
