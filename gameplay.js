@@ -420,6 +420,45 @@ const customers = [
 
 const orders = []
 
+const items = [
+    {
+        "name": "Multiplicador de velocidad",
+        "position": {
+            1: { "x": -14, "z": 11 },
+            2: { "x": -7, "z": -3 },
+            3: { "x": -3, "z": 3 },
+        },
+        "duration": 10000,
+        "mesh": "",
+        "boundingBox": "",
+        "spawned": true
+    },
+    {
+        "name": "Multiplicador de puntos",
+        "position": {
+            1: { "x": -19, "z": -27 },
+            2: { "x": -11, "z":15 },
+            3: { "x": -21, "z": -33 },
+        },
+        "duration": 30000,
+        "mesh": "",
+        "boundingBox": "",
+        "spawned": true
+    },
+    {
+        "name": "Mas tiempo",
+        "position": {
+            1: { "x": 11, "z": 12 },
+            2: { "x": 20, "z":7 },
+            3: { "x": -12, "z": 14 },
+        },
+        "duration": 1,
+        "mesh": "",
+        "boundingBox": "",
+        "spawned": true
+    },
+]
+
 let basuraMesh
 let basuraBB
 new GLTFLoader().load('Models/Environment/glTF/Environment_Pot_2_Empty.gltf', function(gltf){
@@ -504,6 +543,62 @@ new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gl
     ingredients[2].boundingBox = salmonBB
     scene.add(salmonMesh);
 })
+
+let velocidadMesh
+new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(5,5,5)
+    velocidadMesh=model;
+    velocidadMesh.position.x = items[0].position[indexMapa].x;
+    velocidadMesh.position.z = items[0].position[indexMapa].z;
+    let velocidadBB = new THREE.Box3().setFromObject(velocidadMesh);
+    items[0].mesh = velocidadMesh
+    items[0].boundingBox = velocidadBB
+    scene.add(velocidadMesh);
+})
+
+let multPuntosMesh
+new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(5,5,5)
+    multPuntosMesh=model;
+    multPuntosMesh.position.x = items[1].position[indexMapa].x;
+    multPuntosMesh.position.z = items[1].position[indexMapa].z;
+    let multPuntosBB = new THREE.Box3().setFromObject(multPuntosMesh);
+    items[1].mesh = multPuntosMesh
+    items[1].boundingBox = multPuntosBB
+    scene.add(multPuntosMesh);
+})
+
+let sumTiempoMesh
+new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(5,5,5)
+    sumTiempoMesh=model;
+    sumTiempoMesh.position.x = items[2].position[indexMapa].x;
+    sumTiempoMesh.position.z = items[2].position[indexMapa].z;
+    let sumTiempoBB = new THREE.Box3().setFromObject(sumTiempoMesh);
+    items[2].mesh = sumTiempoMesh
+    items[2].boundingBox = sumTiempoBB
+    scene.add(sumTiempoMesh);
+})
+
+
 
 //Skybox
 new THREE.TextureLoader().load("skibox.jpg",(texture)=>{
@@ -824,7 +919,22 @@ function deliverCustomerOrder(customer) {
                     printOrders()
                 }
                 else if(statsPlayer.inventory.dishes[0].name == customer.order.name && customer.spawned == true) {
-                    statsPlayer.pts += customer.pts
+
+                    //Agregar puntos al usuario
+                    if(statsPlayer.inventory.items.length > 0) {
+                        if(statsPlayer.inventory.items[0].name = "Multiplicador de puntos") {
+                            statsPlayer.pts += (customer.pts) * 1.15
+                        }
+                        else {
+                            statsPlayer.pts += customer.pts
+                        }
+                    }
+                    else {
+                        statsPlayer.pts += customer.pts
+                    }
+
+                    printStats()
+                    printOrders()    
                     if(statsPlayer.inventory.dishes.length > 0) {
                         statsPlayer.inventory.dishes[0].ingredients = []
                         statsPlayer.inventory.dishes.splice(0, 1)
@@ -927,6 +1037,20 @@ function checkCollisions(modelBB) {
             pickItem('ingredient', ingredient)
         }
     })
+    //COLISIONES ITEMS
+    items.filter(item => item.spawned === true)
+    items.forEach(item => {
+        try {
+            if(modelBB.intersectsBox(item.boundingBox)){
+                console.log('hay colision con el item')
+                showAlert('press-button', "PULSA E PARA RECOGER " + (item.name).toUpperCase())
+                pickItem('item', item)
+            }
+        }  
+        catch(error)  {
+            // console.log(error)
+        }  
+    })
     //COLISIONES DE CLIENTES SOLAMENTE SPAWNEADOS
     if(customers.length > 0) {
         customers.filter(customer => customer.spawned === true)
@@ -994,6 +1118,30 @@ function pickItem(itemType,item) {
                 else {
                     showAlert('item-picked', "DEBES TENER UN PLATO PARA RECOGER UN INGREDIENTE")
                 }
+            }
+
+            if(itemType == 'item' && statsPlayer.inventory.items.length <= 0) {
+                
+                if(item.name == "Mas tiempo") {
+                    timerCounter += 1800
+                }
+
+                statsPlayer.inventory.items.push(item)
+                showAlert('item-picked', item.name.toUpperCase() + " RECOGIDO!")
+                printInventory()
+                pickupSound.play();
+                console.log(statsPlayer)
+
+                item.boundingBox = null
+                scene.remove(item.mesh)
+                item.spawned = false
+
+                setTimeout(() => {
+                    statsPlayer.inventory.items = [];
+                    printInventory()
+                    console.log(statsPlayer)
+
+                }, item.duration);
             }
 
         }
@@ -1094,6 +1242,7 @@ function printInventory() {
     
     ingredientsList.innerHTML = ''; 
     dishesList.innerHTML = ''; 
+    items.innerHTML = ''; 
 
     if(statsPlayer.inventory.dishes.length > 0) {
         statsPlayer.inventory.dishes.forEach((dish) => {
@@ -1110,6 +1259,14 @@ function printInventory() {
     }
     else {
         ingredientsList.innerHTML = ''; 
+    }
+    if(statsPlayer.inventory.items.length > 0) {
+        statsPlayer.inventory.items.forEach((item) => {
+            itemsList.insertAdjacentHTML('beforeend', `<li>${item.name}</li>`);
+        })
+    }
+    else {
+        itemsList.innerHTML = ''; 
     }
 }
 
@@ -1239,6 +1396,17 @@ function animate() {
             }
             
             printTimer()
+
+            //Evento items
+            if(statsPlayer.inventory.items.length > 0) {
+                let item = statsPlayer.inventory.items[0]
+                if(item.name == "Multiplicador de velocidad") {
+                    charactercontrols.walkVelocity = 20
+                }
+            }
+            else {
+                charactercontrols.walkVelocity = 8
+            }
 
             //Eventos del temporizador
 
