@@ -49,7 +49,7 @@ const providerFB = new FacebookAuthProvider();
 const db = getDatabase();
 
 let currentUser;
-let timerCounter = 7200;
+let timerCounter = 1800;
 
 const statsPlayer = {
     uid : localStorage.getItem('currentPlayer'),
@@ -826,9 +826,10 @@ function printTimer() {
 }
 
 //Subir nueva HighScore
-function writePuntuacionData(userId, Pts) {
+function writePuntuacionData(userId, Pts, Nombre) {
     set(ref(db, 'puntuacion/' + userId), {
-        Puntos: Pts
+        Puntos: Pts,
+        Name: Nombre
     });
 }
 
@@ -845,7 +846,6 @@ onValue(PtsCountRef, (snapshot) => {
     let siExiste = 0;
     
     Object.entries(data).forEach(([key, value]) => {
-    console.log(`${key} ${value.Puntos}`);
         
     if(statsPlayer.uid == key){
         console.log("Si Existes, puntuacion guardad es: " + `${value.Puntos}`);
@@ -853,7 +853,7 @@ onValue(PtsCountRef, (snapshot) => {
         if(statsPlayer.pts > value.Puntos){
             const HighScore = document.getElementById('HighScore');
             HighScore.innerText = "¡Nueva Puntuacion Mas Alta!";
-            writePuntuacionData(statsPlayer.uid, statsPlayer.pts);
+            writePuntuacionData(statsPlayer.uid, statsPlayer.pts, statsPlayer.name);
             console.log("Ya existias, Nueva Puntuacion Mas Alta: " + statsPlayer.pts);
         }
     }
@@ -863,10 +863,41 @@ onValue(PtsCountRef, (snapshot) => {
         const HighScore = document.getElementById('HighScore');
         HighScore.innerText = "¡Nueva Puntuacion Mas Alta!";
         console.log("No tenias puntuacion, ahi te va una nueva");
-        writePuntuacionData(statsPlayer.uid, statsPlayer.pts);
+        writePuntuacionData(statsPlayer.uid, statsPlayer.pts, statsPlayer.name);
     }
 });
 
+}
+let ArrayPts = [];
+
+function TablaPuntuaciones() {
+
+    const PtsCountRef = ref(db, 'puntuacion');
+    onValue(PtsCountRef, (snapshot) => {
+        ArrayPts = [];
+        const data = snapshot.val();
+        
+        //console.log("Tabla Puntuaciones");
+        Object.entries(data).forEach(([key, value]) => {
+
+        ArrayPts.push(
+            { Nombre: `${value.Name}`,
+            Score: value.Puntos}
+        );
+        });
+
+        ArrayPts.sort((a, b) => {
+            return b.Score - a.Score;
+        });
+        console.log(ArrayPts);
+    
+        const ListaPuntuaciones = document.getElementById('Lista-Puntuaciones')
+        ListaPuntuaciones.innerHTML = '';
+    
+        for (var Player of ArrayPts) {
+            ListaPuntuaciones.insertAdjacentHTML('beforeend', `<li>${Player.Nombre}: ${Player.Score}</li>`);
+        }
+    });
 }
 
 function animate() {
@@ -892,8 +923,9 @@ function animate() {
             switch (timerCounter) {
                 case 0:
                     gameOver();
+                    TablaPuntuaciones();
                     break;
-                case 6600: 
+                case 1500: 
                     spawnCustomer(customers[0])
                     break;
             }
