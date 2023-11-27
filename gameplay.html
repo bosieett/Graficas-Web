@@ -3,10 +3,11 @@
 <head>
 	<title>Graficas Computacionales</title>
 	<style>
-		body { margin: 0; }
-		a {
-			text-decoration: none;
+		*{
+			
+			font-family: 'Titan One', cursive;
 		}
+		body { margin: 0; }
 		#gameplay-container {
 			position: relative;
 		}
@@ -21,13 +22,23 @@
 			bottom: 0;
 		}
 		#inventory {
+			background-image: url("imagenes/Hoja.jpg");
+			border-radius: 5px;
 			bottom: 0;
 			right: 0;
 		}
 		#header-menu {
+			background-color: #ffc26a;
+			padding: 10px;
 			top: 0;
 			right: 0;
 		}
+		
+		#header-menu .clay{
+			background-color:#f5f5f5;
+			padding: 20px;
+		}
+
 		#timer-container {
 			left: 0;
 			right: 0;
@@ -36,7 +47,15 @@
 			margin: 0 auto;
 			padding: 0.4em;
 			margin-top: 2em;
+			background-color: #ffc26a;
+			box-shadow: none;
 		}
+
+		#timer-container .clay{
+			
+			background-color:#f5f5f5;
+		}
+
 		#orders-container {
 			left: 0;
 			right: 0;
@@ -46,6 +65,7 @@
 			margin: 0 auto;
 			padding: 0.4em;
 			margin-bottom: 2em;
+			background-color: #ffc26a;
 		}
 		#contenedor-game-over {
 			margin: 0;
@@ -91,17 +111,14 @@
 		}
 		.button-ui {
     appearance: button;
-    background-color: #a7a6d9;
-    border: solid transparent;
-    border-radius: 10px;
-    border-width: 0 0 4px;
+    background-color: #a7a6d9 !important;
+    border: 0px;
     box-sizing: border-box;
     color: #FFFFFF;
     cursor: pointer;
     display: inline-block;
-    font-family: 'Titan One', cursive;
     font-size: 10px;
-    font-weight: 200;
+    font-weight: bold;
     letter-spacing: 3px;
     line-height: 20px;
     margin: 0;
@@ -182,6 +199,7 @@
 }
 	</style>
 	<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/claymorphism-css/dist/clay.css"/>
 
 	<script type="importmap">
 		{
@@ -196,21 +214,29 @@
 	<button id="button-login">Login</button>
 	<button id="button-logout">Logout</button>
 	<button id="button-loginFB">Login Facebook</button>
+	<button id="button-createRoom">Crear sala</button>
+	<button id="button-joinRoom">Unirse a sala</button>
 	
 	<div id="gameplay-container">
-		<div id="header-menu" class="gameplay-alert">
-			Jugador: <span id="nombre-jugador"></span>  
-			<br>
-			Puntos: <span id="puntos-jugador"></span>
+		<div id="header-menu" class="gameplay-alert clay">
+			<div class="clay">
+				Jugador: <span id="nombre-jugador"></span>  
+				<br>
+				Puntos: <span id="puntos-jugador"></span>
+			</div>
 		</div>
-		<div id="timer-container" class="gameplay-alert"><h2 style="margin: 0;" id="timer"></h2></div>
-		<div id="orders-container" class="gameplay-alert">
+		<div id="timer-container" class="gameplay-alert clay">
+			<div class="clay">
+				<h2 style="margin: 0;" id="timer"></h2>
+			</div>
+		</div>
+		<div id="orders-container" class="gameplay-alert clay">
 			<h4>Pedidos</h4>
 			<ul id="orders"></ul>
 		</div>
-		<div id="press-button-alert" class="gameplay-alert" style="display: none;"></div>
-		<div id="item-picked-alert" class="gameplay-alert" style="display: none;"></div>
-		<div id="inventory" class="gameplay-alert">
+		<div id="press-button-alert" class="gameplay-alert clay" style="display: none; background-color:#f5f5f5"></div>
+		<div id="item-picked-alert" class="gameplay-alert clay" style="display: none; background-color:#f5f5f5"></div>
+		<div id="inventory" class="gameplay-alert clay">
 			<h2 style="text-align: center;">Inventario</h2>
 			<h3>Platillos</h3>
 			<ul id="dishes-list"></ul>
@@ -220,17 +246,20 @@
 			<ul id="items-list"></ul>
 		</div>
 		<!-- GAME OVER -->
-		<div id="contenedor-game-over" class="gameplay-alert" style="display: none;">
+		<div id="contenedor-game-over" class="gameplay-alert" style="display: none; background-image: url(imagenes/puntuaciones-background.png); color:#79582a;">
 			<div class="contenido-game-over">
+				<img src="imagenes/titulo-puntuaciones.png" alt="" width="600px">
+				<br>
+				<div class="clay" style="background-color:#fab659;padding: 70px;">
 				<h1>GAME OVER</h1>
 				<h2>Puntuacion final: <span id="puntuacion-final"></span></h2>
 				<h2><span id="HighScore"></span></h2>
 				<ul id="Lista-Puntuaciones"></ul>
-				<button type="button" class="button-ui" id="btnReiniciarJuego">Volver a intentar</button>
+				<button type="button" class="button-ui clay" id="btnReiniciarJuego">Volver a intentar</button>
 			</div>
 		</div>
 		<!-- PAUSA Y CONFIGURACION -->
-		<div id="contenedor-pausa" class="gameplay-alert contenedor-config" style="display: none;">
+		<div id="contenedor-pausa" class="gameplay-alert contenedor-config clay" style="display: none;">
 			<div class="contenedor-logoConfig">
 				<img src="imagenes/Config.png" alt="" class="logoConfig">
 			</div>

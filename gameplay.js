@@ -57,6 +57,7 @@ let currentUser;
 let timerCounter = 7200;
 
 const gameMode = getParameterByName('GameMode');
+console.log(gameMode);
 var mapa = getParameterByName('Mapa');
 var dif = getParameterByName('Dificultad');
 let currentRoom = 0
@@ -79,14 +80,13 @@ const statsPlayer = {
 async function login() {
     await signInWithPopup(auth, provider)
         .then((result) => {
-
+            console.log(result);
             // This gives you a Google Access Token. You can use it to access the Google API.
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const token = credential.accessToken;
 
             // The signed-in user info.
             currentUser = result.user;
-            writeUserData(currentUser.uid, 5, 0);
 
             localStorage.setItem('currentPlayer', currentUser.uid)
             localStorage.setItem('currentPlayerName', currentUser.displayName)
@@ -100,13 +100,6 @@ async function login() {
             location.href = location.href;
 
         }).catch((error) => {
-            // Handle Errors here.
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            // The email of the user's account used.
-            const email = error.customData.email;
-            // The AuthCredential type that was used.
-            const credential = GoogleAuthProvider.credentialFromError(error);
             console.log(error);
             // ...
         });
@@ -120,7 +113,6 @@ async function loginFB() {
             const tokenFB = credentialFB.accessToken;
             // The signed-in user info.
             currentUser = result.user;
-            writeUserData(currentUser.uid, 5, 0);
             
             localStorage.setItem('currentPlayer', currentUser.uid)
             localStorage.setItem('currentPlayerName', currentUser.displayName)
@@ -505,7 +497,7 @@ const items = [
             3: { "x": -3, "z": 3 },
         },
         "duration": 10000,
-        "mesh": "",
+        "mesh": "Models/Food/glTF/FoodIngredient_Squid.gltf",
         "boundingBox": "",
         "spawned": true
     },
@@ -517,7 +509,7 @@ const items = [
             3: { "x": -21, "z": -33 },
         },
         "duration": 30000,
-        "mesh": "",
+        "mesh": "Models/Food/glTF/FoodIngredient_Shimesaba.gltf",
         "boundingBox": "",
         "spawned": true
     },
@@ -529,7 +521,7 @@ const items = [
             3: { "x": -12, "z": 14 },
         },
         "duration": 1,
-        "mesh": "",
+        "mesh": "Models/Food/glTF/Food_SalmonRoll.gltf",
         "boundingBox": "",
         "spawned": true
     },
@@ -621,16 +613,17 @@ new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gl
 })
 
 let velocidadMesh
-new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gltf){
+new GLTFLoader().load(items[0].mesh, function(gltf){
     const model = gltf.scene;
     model.traverse(object=>{
         if(object.isMesh) {
             object.castShadow=true;
         } 
     });
-    model.scale.set(5,5,5)
+    model.scale.set(2,2,2)
     velocidadMesh=model;
     velocidadMesh.position.x = items[0].position[indexMapa].x;
+    velocidadMesh.position.y = 2;
     velocidadMesh.position.z = items[0].position[indexMapa].z;
     let velocidadBB = new THREE.Box3().setFromObject(velocidadMesh);
     items[0].mesh = velocidadMesh
@@ -639,16 +632,17 @@ new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gl
 })
 
 let multPuntosMesh
-new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gltf){
+new GLTFLoader().load(items[1].mesh, function(gltf){
     const model = gltf.scene;
     model.traverse(object=>{
         if(object.isMesh) {
             object.castShadow=true;
         } 
     });
-    model.scale.set(5,5,5)
+    model.scale.set(6,6,6)
     multPuntosMesh=model;
     multPuntosMesh.position.x = items[1].position[indexMapa].x;
+    velocidadMesh.position.y = 3;
     multPuntosMesh.position.z = items[1].position[indexMapa].z;
     let multPuntosBB = new THREE.Box3().setFromObject(multPuntosMesh);
     items[1].mesh = multPuntosMesh
@@ -657,16 +651,17 @@ new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gl
 })
 
 let sumTiempoMesh
-new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gltf){
+new GLTFLoader().load(items[2].mesh, function(gltf){
     const model = gltf.scene;
     model.traverse(object=>{
         if(object.isMesh) {
             object.castShadow=true;
         } 
     });
-    model.scale.set(5,5,5)
+    model.scale.set(6,6,6)
     sumTiempoMesh=model;
     sumTiempoMesh.position.x = items[2].position[indexMapa].x;
+    velocidadMesh.position.y = 1;
     sumTiempoMesh.position.z = items[2].position[indexMapa].z;
     let sumTiempoBB = new THREE.Box3().setFromObject(sumTiempoMesh);
     items[2].mesh = sumTiempoMesh
@@ -807,7 +802,38 @@ audioLoader.load("Audio/tomarorden.wav", function(buffer){
     takeorderSound.setLoop(false);
     happySound.setVolume(VolVFX);
 })
-camera.add(listener)
+camera.add(listener);
+
+const particleCount = 1000;
+const particleRadius = 0.4;
+
+const textureLoader = new THREE.TextureLoader();
+
+
+const particles = new THREE.Group();
+textureLoader.load('imagenes/estrella.png', function(imagen){
+    for (let i = 0; i < particleCount; i++) {
+        const particleMaterial = new THREE.SpriteMaterial({
+            color: 0xffffff,
+            map: imagen.clone(),
+            transparent: true,
+            opacity: Math.random(),
+        });
+    
+        const particle = new THREE.Sprite(particleMaterial);
+        particle.scale.set(particleRadius, particleRadius, 1); 
+        particle.position.set(
+            (Math.random() - 0.5) * 50,
+            (Math.random() - 0.5) * 50,
+            (Math.random() - 0.5) * 50
+        );
+        particles.add(particle);
+    }
+    
+    scene.add(particles);
+    
+});
+
 
 var charactercontrols;
 
