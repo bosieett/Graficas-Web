@@ -56,11 +56,16 @@ const db = getDatabase();
 let currentUser;
 let timerCounter = 7200;
 
+
+
+
+let currentRoom = 0
+
 const gameMode = getParameterByName('GameMode');
 console.log(gameMode);
+
 var mapa = getParameterByName('Mapa');
 var dif = getParameterByName('Dificultad');
-let currentRoom = 0
 
 //Crear objeto usuario local
 const statsPlayer = {
@@ -190,27 +195,42 @@ document.getElementById('button-createRoom').addEventListener('click', async fun
 
 document.getElementById('button-joinRoom').addEventListener('click', function() {
 
-    let roomId = prompt('Introduce la clave de la sala')
+    let roomPrompt = prompt('Introduce la clave de la sala')
+    
+    const roomRef = ref(db, 'room');
 
-    if(roomId) {
-        set(ref(db, 'roomPlayers/' + roomId + '/' + statsPlayer.uid), {
-            pts: 0,
-            status: "conectado",
-            user_name: statsPlayer.name,
-            position: {
-                x: 5,
-                z: 0
-            }
-        });
+    get(roomRef)
+    .then((snapshot) => {
+        const roomValue = snapshot.val();
 
-        currentRoom = roomId
+        const roomExists = Object.keys(roomValue).find(key => roomValue[key].room_code === parseInt(roomPrompt) && roomValue[key].timer > 0 && roomValue[key].map === indexMapa);
 
-        spawnPlayerModel()
-        animate()
+        if(roomExists) {
+            currentRoom = roomExists
 
-        alert('Haz entrado a la sala con exito!')
-
-    }
+            set(ref(db, 'roomPlayers/' + currentRoom + '/' + statsPlayer.uid), {
+                pts: 0,
+                status: "conectado",
+                user_name: statsPlayer.name,
+                position: {
+                    x: 5,
+                    z: 0
+                }
+            });  
+    
+            spawnPlayerModel()
+            animate()
+    
+            alert('Haz entrado a la sala con exito!')
+        }
+        else {
+            alert('ERROR AL ENTRAR A LA SALA. Es probable que la sala no exista o su partida haya terminado, verifica que estas en el mismo mapa que la sala a la que quieres entrar')
+        }
+    })
+    .catch((error) => {
+        console.error('Error al obtener el valor del temporizador:', error);
+        throw error;
+    });
 
 })
 
@@ -241,7 +261,7 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-const indexMapa = mapa;
+var indexMapa = mapa;
 
 //Esenciales
 const scene = new THREE.Scene();
@@ -839,9 +859,9 @@ var charactercontrols;
 
 
 //Escribir
-function writeUserData(roomId, userId, positionX, positionZ) {
+function writeUserData(roomId, userId, pts, positionX, positionZ) {
     set(ref(db, 'roomPlayers' + '/' + roomId + '/' + userId), {
-        pts: 0,
+        pts: pts,
         status: "conectado",
         user_name: statsPlayer.name,
         position: {
@@ -1102,13 +1122,16 @@ function deliverCustomerOrder(customer) {
                         if(statsPlayer.inventory.items[0].name = "Multiplicador de puntos") {
                             statsPlayer.pts += (customer.pts) * 1.15
                             statsPlayer.pts = Math.floor(statsPlayer.pts)
+                            writeUserData(currentRoom, statsPlayer.uid, statsPlayer.pts, charactercontrols.getPosX(),charactercontrols.getPosZ())
                         }
                         else {
                             statsPlayer.pts += customer.pts
+                            writeUserData(currentRoom, statsPlayer.uid, statsPlayer.pts, charactercontrols.getPosX(),charactercontrols.getPosZ())
                         }
                     }
                     else {
                         statsPlayer.pts += customer.pts
+                        writeUserData(currentRoom, statsPlayer.uid, statsPlayer.pts, charactercontrols.getPosX(),charactercontrols.getPosZ())
                     }
 
                     printStats()
@@ -1574,7 +1597,7 @@ function animate() {
 
             checkCollisions(modelBB);
 
-            writeUserData(currentRoom, statsPlayer.uid, charactercontrols.getPosX(),charactercontrols.getPosZ());
+            writeUserData(currentRoom, statsPlayer.uid, statsPlayer.pts, charactercontrols.getPosX(),charactercontrols.getPosZ());
 
             if (!enPausa && gameMode == "Multiplayer"){
                 updateRemoteTimer()
