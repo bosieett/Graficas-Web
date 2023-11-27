@@ -258,6 +258,45 @@ const customers = [
 
 const orders = []
 
+const items = [
+    {
+        "name": "Multiplicador de velocidad",
+        "position": {
+            1: { "x": -14, "z": 11 },
+            2: { "x": -7, "z": -3 },
+            3: { "x": -3, "z": 3 },
+        },
+        "duration": 10000,
+        "mesh": "Models/Food/glTF/FoodIngredient_Squid.gltf",
+        "boundingBox": "",
+        "spawned": true
+    },
+    {
+        "name": "Multiplicador de puntos",
+        "position": {
+            1: { "x": -19, "z": -27 },
+            2: { "x": -11, "z":15 },
+            3: { "x": -21, "z": -33 },
+        },
+        "duration": 30000,
+        "mesh": "Models/Food/glTF/FoodIngredient_Shimesaba.gltf",
+        "boundingBox": "",
+        "spawned": true
+    },
+    {
+        "name": "Mas tiempo",
+        "position": {
+            1: { "x": 11, "z": 12 },
+            2: { "x": 20, "z":7 },
+            3: { "x": -12, "z": 14 },
+        },
+        "duration": 1,
+        "mesh": "Models/Food/glTF/Food_SalmonRoll.gltf",
+        "boundingBox": "",
+        "spawned": true
+    },
+]
+
 let basuraMesh
 let basuraBB
 new GLTFLoader().load('Models/Environment/glTF/Environment_Pot_2_Empty.gltf', function(gltf){
@@ -342,6 +381,65 @@ new GLTFLoader().load('Models/Food/glTF/FoodIngredient_Salmon.gltf', function(gl
     ingredients[2].boundingBox = salmonBB
     scene.add(salmonMesh);
 })
+
+let velocidadMesh
+new GLTFLoader().load(items[0].mesh, function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(2,2,2)
+    velocidadMesh=model;
+    velocidadMesh.position.x = items[0].position[indexMapa].x;
+    velocidadMesh.position.y = 2;
+    velocidadMesh.position.z = items[0].position[indexMapa].z;
+    let velocidadBB = new THREE.Box3().setFromObject(velocidadMesh);
+    items[0].mesh = velocidadMesh
+    items[0].boundingBox = velocidadBB
+    scene.add(velocidadMesh);
+})
+
+let multPuntosMesh
+new GLTFLoader().load(items[1].mesh, function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(6,6,6)
+    multPuntosMesh=model;
+    multPuntosMesh.position.x = items[1].position[indexMapa].x;
+    multPuntosMesh.position.y=2.4;
+    multPuntosMesh.position.z = items[1].position[indexMapa].z;
+    let multPuntosBB = new THREE.Box3().setFromObject(multPuntosMesh);
+    items[1].mesh = multPuntosMesh
+    items[1].boundingBox = multPuntosBB
+    scene.add(multPuntosMesh);
+})
+
+let sumTiempoMesh
+new GLTFLoader().load(items[2].mesh, function(gltf){
+    const model = gltf.scene;
+    model.traverse(object=>{
+        if(object.isMesh) {
+            object.castShadow=true;
+        } 
+    });
+    model.scale.set(6,6,6)
+    sumTiempoMesh=model;
+    sumTiempoMesh.position.x = items[2].position[indexMapa].x;
+    sumTiempoMesh.position.y = 1;
+    sumTiempoMesh.position.z = items[2].position[indexMapa].z;
+    let sumTiempoBB = new THREE.Box3().setFromObject(sumTiempoMesh);
+    items[2].mesh = sumTiempoMesh
+    items[2].boundingBox = sumTiempoBB
+    scene.add(sumTiempoMesh);
+})
+
+
 
 //Skybox
 new THREE.TextureLoader().load("skibox.jpg",(texture)=>{
@@ -439,6 +537,40 @@ audioLoader.load("Audio/tomarorden.wav", function(buffer){
     takeorderSound.setVolume(1.0);
 })
 camera.add(listener)
+
+
+//PARTICULAS
+
+
+const particleCount = 1000;
+const particleRadius = 0.4;
+
+const textureLoader = new THREE.TextureLoader();
+
+
+const particles = new THREE.Group();
+textureLoader.load('imagenes/estrella.png', function(imagen){
+    for (let i = 0; i < particleCount; i++) {
+        const particleMaterial = new THREE.SpriteMaterial({
+            color: 0xffffff,
+            map: imagen.clone(),
+            transparent: true,
+            opacity: Math.random(),
+        });
+    
+        const particle = new THREE.Sprite(particleMaterial);
+        particle.scale.set(particleRadius, particleRadius, 1); 
+        particle.position.set(
+            (Math.random() - 0.5) * 50,
+            (Math.random() - 0.5) * 50,
+            (Math.random() - 0.5) * 50
+        );
+        particles.add(particle);
+    }
+    
+    scene.add(particles);
+    
+});
 
 var charactercontrols;
 
@@ -889,18 +1021,65 @@ function animate() {
             printTimer()
 
             //Eventos del temporizador
-            switch (timerCounter) {
-                case 0:
-                    gameOver();
-                    break;
-                case 6600: 
-                    spawnCustomer(customers[0])
-                    break;
+
+            //Dificultad Normal
+            if(dif == 1){
+                switch (timerCounter) {
+                    case 0:
+                        gameOver();
+                        TablaPuntuaciones();
+                        break;
+                    case 7100: 
+                        spawnCustomer(customers[0])
+                        break;
+                    case 5400: 
+                        spawnCustomer(customers[1])
+                        break;
+                    case 3600: 
+                        spawnCustomer(customers[2])
+                        break;
+                    case 1800: 
+                        spawnCustomer(customers[3])
+                        break;
+                }
             }
+
+            //Dificultad Dificil
+            if(dif == 2){
+                switch (timerCounter) {
+                    case 0:
+                        gameOver();
+                        TablaPuntuaciones();
+                        break;
+                    case 7100: 
+                        spawnCustomer(customers[0])
+                        break;
+                    case 6000: 
+                        spawnCustomer(customers[1])
+                        break;
+                    case 4800: 
+                        spawnCustomer(customers[2])
+                        break;
+                    case 3600: 
+                        spawnCustomer(customers[3])
+                        break;
+                    case 2400: 
+                        spawnCustomer(customers[4])
+                        break;
+                    case 1200: 
+                        spawnCustomer(customers[5])
+                        break;
+                }
+            }
+            
         }
 
     }
     controls.update();
+   
+
+    particles.rotation.x += 0.001;
+    particles.rotation.y += 0.001;
 
     renderer.render( scene, camera );
 

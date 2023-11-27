@@ -3,6 +3,10 @@
 <head>
 	<title>Graficas Computacionales</title>
 	<style>
+		*{
+			
+			font-family: 'Titan One', cursive;
+		}
 		body { margin: 0; }
 		#gameplay-container {
 			position: relative;
@@ -18,13 +22,23 @@
 			bottom: 0;
 		}
 		#inventory {
+			background-image: url("imagenes/Hoja.jpg");
+			border-radius: 5px;
 			bottom: 0;
 			right: 0;
 		}
 		#header-menu {
+			background-color: #ffc26a;
+			padding: 10px;
 			top: 0;
 			right: 0;
 		}
+		
+		#header-menu .clay{
+			background-color:#f5f5f5;
+			padding: 20px;
+		}
+
 		#timer-container {
 			left: 0;
 			right: 0;
@@ -33,7 +47,15 @@
 			margin: 0 auto;
 			padding: 0.4em;
 			margin-top: 2em;
+			background-color: #ffc26a;
+			box-shadow: none;
 		}
+
+		#timer-container .clay{
+			
+			background-color:#f5f5f5;
+		}
+
 		#orders-container {
 			left: 0;
 			right: 0;
@@ -43,6 +65,7 @@
 			margin: 0 auto;
 			padding: 0.4em;
 			margin-bottom: 2em;
+			background-color: #ffc26a;
 		}
 		#contenedor-game-over {
 			margin: 0;
@@ -61,9 +84,125 @@
 		ul {
 			padding-left: 1em;
 		}
+		
+		.contenedor-config {
+    background-image: url(imagenes/BACKGROUND-IMG.png);
+	margin-left: 17%;
+}
+		.contenedor-logoConfig {
+    	display: flex;
+    	justify-content: center;
+    	margin-bottom: 4em;
+    	padding-top: 3em;
+		}
+		.logoConfig {
+    	width: 1000px;
+		}
+		.contenedor-contenedores-config{
+    	display: flex;
+    	width: 50%;
+    	justify-content: center;
+    	margin-left: 25%;
+		}
+		.contenedor-botones-config{
+   	 	width: 60%;
+   	 	margin-left: 40px;
+    	margin-right: 40px;
+		}
+		.button-ui {
+    appearance: button;
+    background-color: #a7a6d9 !important;
+    border: 0px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    line-height: 20px;
+    margin: 0;
+    outline: none;
+    overflow: visible;
+    padding: 1em 2em;
+    text-align: center;
+    text-transform: uppercase;
+    touch-action: manipulation;
+    transform: translateZ(0);
+    transition: filter .2s;
+    user-select: none;
+    -webkit-user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    width: 100%;
+    margin-bottom: 1em;
+		}
+		.slider-cont{
+    padding: 25px;
+    border-radius: 10px 20px 20px 5px;
+    display: flex;
+    align-items: center;
+		}
+.slider{
+    position: relative;
+    width: 100px;
+    height: 20px;
+}
+
+.slider input {
+    position: absolute;
+    left: -6px;
+    top: 0;
+    width: 212px;
+    height: 20px;
+    -webkit-appearance: none;
+    background-color: transparent;
+    z-index: 99;
+}
+
+.slider input::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background-color: #FFFFFF;
+    border: 2px solid #e91e63;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.slider progress {
+    width: 200px;
+    height: 20px;
+    -webkit-appearance: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.slider progress::-webkit-progress-bar {
+    background-color: #f0f0f0;
+}
+.slider progress::-webkit-progress-value{
+    background-color: #e91e63;
+}
+.sliderValueMusica{
+    width: 28px;
+    height: 20px;
+    margin-left: 10px;
+    text-align: center;
+}
+.sliderValueVFX{
+    width: 28px;
+    height: 20px;
+    margin-left: 10px;
+    text-align: center;
+}
 	</style>
 	<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
-
+	<link
+	rel="stylesheet"
+	href="https://unpkg.com/claymorphism-css/dist/clay.css"
+  />
 	<script type="importmap">
 		{
 		"imports": {
@@ -79,32 +218,77 @@
 	<button id="button-loginFB">Login Facebook</button>
 
 	<div id="gameplay-container">
-		<div id="header-menu" class="gameplay-alert">
-			Jugador: <span id="nombre-jugador"></span>  
-			<br>
-			Puntos: <span id="puntos-jugador"></span>
+		<div id="header-menu" class="gameplay-alert clay">
+			<div class="clay">
+				Jugador: <span id="nombre-jugador"></span>  
+				<br>
+				Puntos: <span id="puntos-jugador"></span>
+			</div>
 		</div>
-		<div id="timer-container" class="gameplay-alert"><h2 style="margin: 0;" id="timer"></h2></div>
-		<div id="orders-container" class="gameplay-alert">
+		<div id="timer-container" class="gameplay-alert clay"><div class="clay"><h2 style="margin: 0;" id="timer"></h2></div></div>
+		<div id="orders-container" class="gameplay-alert clay">
 			<h4>Pedidos</h4>
 			<ul id="orders"></ul>
 		</div>
-		<div id="press-button-alert" class="gameplay-alert" style="display: none;"></div>
-		<div id="item-picked-alert" class="gameplay-alert" style="display: none;"></div>
-		<div id="inventory" class="gameplay-alert">
+		<div id="press-button-alert" class="gameplay-alert clay" style="display: none; background-color:#f5f5f5;"></div>
+		<div id="item-picked-alert" class="gameplay-alert clay" style="display: none; background-color:#f5f5f5;"></div>
+		<div id="inventory" class="gameplay-alert clay">
 			<h2 style="text-align: center;">Inventario</h2>
-			<h3>Platillos</h3>
+			<h3>Platillos<hr></h3>
 			<ul id="dishes-list"></ul>
-			<h3>Ingredientes</h3>
+			<h3>Ingredientes<hr></h3>
 			<ul id="ingredients-list"></ul>
-			<h3>Items</h3>
+			<h3>Items<hr></h3>
 			<ul id="items-list"></ul>
 		</div>
-		<div id="contenedor-game-over" class="gameplay-alert" style="display: none;">
+		<!-- GAME OVER -->
+		<div id="contenedor-game-over" class="gameplay-alert" style="display: none; background-image: url(imagenes/puntuaciones-background.png); color:#79582a;">
 			<div class="contenido-game-over">
+				<img src="imagenes/titulo-puntuaciones.png" alt="" width="600px">
+				<br>
+				<div class="clay" style="background-color:#fab659;padding: 70px;">
 				<h1>GAME OVER</h1>
 				<h2>Puntuacion final: <span id="puntuacion-final"></span></h2>
 				<h2><span id="HighScore"></span></h2>
+				<ul id="Lista-Puntuaciones"></ul>
+			</div>
+			</div>
+		</div>
+		<!-- PAUSA Y CONFIGURACION -->
+		<div id="contenedor-pausa" class="gameplay-alert contenedor-config" style="display: none;">
+			<div class="contenedor-logoConfig">
+				<img src="imagenes/Config.png" alt="" class="logoConfig">
+			</div>
+			<div class="contenedor-contenedores-config">
+				<!--
+				<div class="contenedor-botones-config">
+					<a class="button-ui" href="#">DIFICULTAD</a>
+					<a class="button-ui" href="#">CALIDAD GRAF.</a>
+				</div>
+				-->
+				<div class="contenedor-botones-config">
+					<br><br><br>
+					<div class="clay button-ui">VOL. MUSICA
+						<div class="slider-cont">
+							<div class="slider">
+								<input class="inputMusica" type="range" min="0" max="100" value="50">
+								<progress class="progressMusica" min="0" max="100" value="50"></progress>
+							</div>
+							<div class="sliderValueMusica">50</div>
+						</div>
+					</div>
+					<div class="clay button-ui">VOL. VFX
+						<div class="slider-cont">
+							<div class="slider">
+								<input class="inputVFX" type="range" min="0" max="100" value="50">
+								<progress class="progressVFX" min="0" max="100" value="50"></progress>
+							</div>
+							<div class="sliderValueVFX">50</div>
+						</div>
+						</script>
+					</div>
+					<button class="clay button-ui" id="btnGuardarConfig">GUARDAR</button>
+				</div>
 			</div>
 		</div>
 	</div>
