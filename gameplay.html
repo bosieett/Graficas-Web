@@ -61,6 +61,122 @@
 		ul {
 			padding-left: 1em;
 		}
+		
+		.contenedor-config {
+    background-image: url(imagenes/BACKGROUND-IMG.png);
+	margin-left: 17%;
+}
+		.contenedor-logoConfig {
+    	display: flex;
+    	justify-content: center;
+    	margin-bottom: 4em;
+    	padding-top: 3em;
+		}
+		.logoConfig {
+    	width: 1000px;
+		}
+		.contenedor-contenedores-config{
+    	display: flex;
+    	width: 50%;
+    	justify-content: center;
+    	margin-left: 25%;
+		}
+		.contenedor-botones-config{
+   	 	width: 60%;
+   	 	margin-left: 40px;
+    	margin-right: 40px;
+		}
+		.button-ui {
+    appearance: button;
+    background-color: #a7a6d9;
+    border: solid transparent;
+    border-radius: 10px;
+    border-width: 0 0 4px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'Titan One', cursive;
+    font-size: 10px;
+    font-weight: 200;
+    letter-spacing: 3px;
+    line-height: 20px;
+    margin: 0;
+    outline: none;
+    overflow: visible;
+    padding: 1em 2em;
+    text-align: center;
+    text-transform: uppercase;
+    touch-action: manipulation;
+    transform: translateZ(0);
+    transition: filter .2s;
+    user-select: none;
+    -webkit-user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    width: 100%;
+    margin-bottom: 1em;
+		}
+		.slider-cont{
+    padding: 25px;
+    border-radius: 10px 20px 20px 5px;
+    display: flex;
+    align-items: center;
+		}
+.slider{
+    position: relative;
+    width: 100px;
+    height: 20px;
+}
+
+.slider input {
+    position: absolute;
+    left: -6px;
+    top: 0;
+    width: 212px;
+    height: 20px;
+    -webkit-appearance: none;
+    background-color: transparent;
+    z-index: 99;
+}
+
+.slider input::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background-color: #FFFFFF;
+    border: 2px solid #e91e63;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.slider progress {
+    width: 200px;
+    height: 20px;
+    -webkit-appearance: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.slider progress::-webkit-progress-bar {
+    background-color: #f0f0f0;
+}
+.slider progress::-webkit-progress-value{
+    background-color: #e91e63;
+}
+.sliderValueMusica{
+    width: 28px;
+    height: 20px;
+    margin-left: 10px;
+    text-align: center;
+}
+.sliderValueVFX{
+    width: 28px;
+    height: 20px;
+    margin-left: 10px;
+    text-align: center;
+}
 	</style>
 	<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
 
@@ -100,6 +216,7 @@
 			<h3>Items</h3>
 			<ul id="items-list"></ul>
 		</div>
+		<!-- GAME OVER -->
 		<div id="contenedor-game-over" class="gameplay-alert" style="display: none;">
 			<div class="contenido-game-over">
 				<h1>GAME OVER</h1>
@@ -108,6 +225,44 @@
 				<ul id="Lista-Puntuaciones"></ul>
 			</div>
 		</div>
+		<!-- PAUSA Y CONFIGURACION -->
+		<div id="contenedor-pausa" class="gameplay-alert contenedor-config" style="display: none;">
+			<div class="contenedor-logoConfig">
+				<img src="imagenes/Config.png" alt="" class="logoConfig">
+			</div>
+			<div class="contenedor-contenedores-config">
+				<!--
+				<div class="contenedor-botones-config">
+					<a class="button-ui" href="#">DIFICULTAD</a>
+					<a class="button-ui" href="#">CALIDAD GRAF.</a>
+				</div>
+				-->
+				<div class="contenedor-botones-config">
+					<br><br><br>
+					<div class="button-ui">VOL. MUSICA
+						<div class="slider-cont">
+							<div class="slider">
+								<input class="inputMusica" type="range" min="0" max="100" value="50">
+								<progress class="progressMusica" min="0" max="100" value="50"></progress>
+							</div>
+							<div class="sliderValueMusica">50</div>
+						</div>
+					</div>
+					<div class="button-ui">VOL. VFX
+						<div class="slider-cont">
+							<div class="slider">
+								<input class="inputVFX" type="range" min="0" max="100" value="50">
+								<progress class="progressVFX" min="0" max="100" value="50"></progress>
+							</div>
+							<div class="sliderValueVFX">50</div>
+						</div>
+						</script>
+					</div>
+					<button class="button-ui" id="btnGuardarConfig">GUARDAR</button>
+				</div>
+			</div>
+		</div>
+		<!-- TERMINA PAUSA Y CONFIGURACION -->
 	</div>
 
 	<script type="module" src="./gameplay.js"></script>
