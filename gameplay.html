@@ -73,6 +73,11 @@
 			height: 100%;
 			text-align: center;
 		}
+		#room-scores-alert {
+			top: 0;
+			bottom: 0;
+			left: 0;
+		}
 		.contenido-game-over {
 			width: 100%;
 			height: 100%;
@@ -252,10 +257,17 @@
 				<br>
 				<div class="clay" style="background-color:#fab659;padding: 70px;">
 				<h1>GAME OVER</h1>
-				<h2>Puntuacion final: <span id="puntuacion-final"></span></h2>
-				<h2><span id="HighScore"></span></h2>
-				<ul id="Lista-Puntuaciones"></ul>
-				<button type="button" class="button-ui clay" id="btnReiniciarJuego">Volver a intentar</button>
+				<div id="SinglePlayer">
+					<h2>Puntuacion final: <span id="puntuacion-final"></span></h2>
+					<h2><span id="HighScore"></span></h2>
+					<ul id="Lista-Puntuaciones"></ul>
+					<button type="button" class="button-ui clay" id="btnReiniciarJuego">Volver a intentar</button>
+				</div>
+				<div id="Multiplayer">
+					<h2 id="PuntuacionMulti">¡Fin del Juego!</h2>
+					<h2 id="GanadorTitulo">Ganador del Enfrentamiento:</h2>
+					<h2><span id="GanadorNombre"></span></h2>
+				</div>
 				</div>
 			</div>
 		</div>

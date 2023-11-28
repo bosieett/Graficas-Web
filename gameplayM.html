@@ -27,6 +27,11 @@
 			bottom: 0;
 			right: 0;
 		}
+		#PuntuacioneLIVE {
+			background-image: url("imagenes/Hoja.jpg");
+			border-radius: 5px;
+			right: 0;
+		}
 		#header-menu {
 			background-color: #ffc26a;
 			padding: 10px;
@@ -244,6 +249,11 @@
 			<ul id="ingredients-list"></ul>
 			<h3>Items</h3>
 			<ul id="items-list"></ul>
+			<h3>Ingredientes</h3>
+		</div>
+		<div id="PuntuacioneLIVE" class="gameplay-alert clay">
+			<h2 style="text-align: center;">Puntuaciones</h2>
+			<ul id="PuntuacionesLIVE-list"></ul>
 		</div>
 		<!-- GAME OVER -->
 		<div id="contenedor-game-over" class="gameplay-alert" style="display: none; background-image: url(imagenes/puntuaciones-background.png); color:#79582a;">
@@ -252,10 +262,17 @@
 				<br>
 				<div class="clay" style="background-color:#fab659;padding: 70px;">
 				<h1>GAME OVER</h1>
-				<h2>Puntuacion final: <span id="puntuacion-final"></span></h2>
-				<h2><span id="HighScore"></span></h2>
-				<ul id="Lista-Puntuaciones"></ul>
-				<button type="button" class="button-ui clay" id="btnReiniciarJuego">Volver a intentar</button>
+				<div id="SinglePlayer">
+					<h2>Puntuacion final: <span id="puntuacion-final"></span></h2>
+					<h2><span id="HighScore"></span></h2>
+					<ul id="Lista-Puntuaciones"></ul>
+					<button type="button" class="button-ui clay" id="btnReiniciarJuego">Volver a intentar</button>
+				</div>
+				<div id="Multiplayer">
+					<h2 id="PuntuacionMulti">¡Fin del Juego!</h2>
+					<h2 id="GanadorTitulo">Ganador del Enfrentamiento:</h2>
+					<h2><span id="GanadorNombre"></span></h2>
+				</div>
 			</div>
 			</div>
 		</div>
